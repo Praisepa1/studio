@@ -18,6 +18,17 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    // Aliasing async_hooks to false for the client-side bundle
+    // to prevent Module Not Found errors with OpenTelemetry/Genkit.
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'async_hooks': false,
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
