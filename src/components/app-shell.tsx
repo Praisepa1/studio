@@ -1,7 +1,8 @@
+
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   SearchCheck,
@@ -12,13 +13,13 @@ import {
   Settings as SettingsIcon,
   Briefcase,
   PanelLeft,
+  LogOut,
 } from "lucide-react";
 
 import {
   SidebarProvider,
   Sidebar,
   SidebarHeader,
-  // SidebarTrigger, // We will use a manual trigger button for icon mode
   SidebarContent,
   SidebarMenu,
   SidebarMenuItem,
@@ -38,6 +39,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
+
 
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-primary whitespace-nowrap">
@@ -66,6 +69,8 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon: Icon, label, pathname }) 
 
 const AppHeaderContent = () => {
     const pathname = usePathname();
+    const router = useRouter();
+    const { toast } = useToast();
     const { toggleSidebar, isMobile } = useSidebar();
 
     const navItemsList = [
@@ -76,9 +81,22 @@ const AppHeaderContent = () => {
         { href: "/cover-letter-generator", label: "Cover Letter Generator" },
         { href: "/automated-application", label: "Automated Application" },
         { href: "/settings", label: "Settings" },
+        { href: "/auth", label: "Authentication"},
     ];
     
-    const currentPageLabel = navItemsList.find(item => item.href === pathname)?.label || "JobJet";
+    let currentPageLabel = navItemsList.find(item => item.href === pathname)?.label || "JobJet";
+    if (pathname.startsWith("/auth")) {
+        currentPageLabel = "Authentication";
+    }
+
+
+    const handleLogout = async () => {
+        // Placeholder for actual logout logic
+        console.log("Logging out...");
+        await new Promise(resolve => setTimeout(resolve, 500));
+        toast({ title: "Logged Out (Mock)", description: "You have been successfully logged out." });
+        router.push("/auth?view=login"); 
+    };
 
     return (
         <>
@@ -111,7 +129,10 @@ const AppHeaderContent = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem disabled>Support</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem disabled>Logout</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -132,13 +153,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     { href: "/automated-application", icon: Send, label: "Auto Apply" },
   ];
 
+  // Hide sidebar for auth page or if it's the landing page and not nested
+  const isAuthPage = pathname.startsWith("/auth");
+  const isLandingPage = pathname === "/"; 
+  // Simple check: if it's exactly the landing page or auth page, don't show sidebar for main content area
+  // This might need refinement if you have a dashboard at "/" that IS NOT the landing page.
+  const showSidebarLayout = !isAuthPage;
+
+
+  if (!showSidebarLayout) {
+    return (
+      <>
+        {children}
+        <Toaster />
+      </>
+    );
+  }
+
   return (
     <SidebarProvider defaultOpen>
       <Sidebar variant="sidebar" collapsible="icon" side="left">
         <SidebarHeader className="p-4 flex items-center justify-between border-b border-sidebar-border">
           <Logo />
-           {/* The sidebar trigger button from ui/sidebar is used to toggle mobile, but for desktop icon mode, the rail or explicit toggle is better. */}
-          {/* We can add an explicit button for desktop icon mode if rail is not enough */}
         </SidebarHeader>
         <SidebarContent className="p-2 flex-1">
           <SidebarMenu>
@@ -172,3 +208,4 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+

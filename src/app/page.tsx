@@ -56,12 +56,12 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
             <Button asChild size="lg" className="shadow-lg hover:shadow-primary/40 transition-shadow">
-              <Link href="/settings"> {/* Assuming settings is where user might start configuring */}
+              <Link href="/auth?view=signup"> 
                 Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="shadow-md">
-              <Link href="#"> {/* Conceptual Login Link */}
+              <Link href="/auth?view=login"> 
                 <LogIn className="mr-2 h-5 w-5" /> Login
               </Link>
             </Button>
@@ -195,7 +195,7 @@ export default function LandingPage() {
             Join JobJet today and transform your job search experience. It's time to let AI work for you.
           </p>
           <Button asChild size="lg" variant="secondary" className="text-primary-foreground bg-background hover:bg-background/90 shadow-lg">
-            <Link href="/settings"> {/* Assuming settings is where user might start configuring */}
+            <Link href="/auth?view=signup"> 
               Sign Up Now & Get Started <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
