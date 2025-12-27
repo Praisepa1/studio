@@ -26,6 +26,10 @@ const nextConfig: NextConfig = {
         ...config.resolve.alias,
         'async_hooks': false,
       };
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        'async_hooks': false,
+      }
     }
     return config;
   },
