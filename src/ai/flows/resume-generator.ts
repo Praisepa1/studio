@@ -1,5 +1,5 @@
-// Define types and implement resume generation flow.
 'use server';
+// Define types and implement resume generation flow.
 
 /**
  * @fileOverview Resume generator AI agent.

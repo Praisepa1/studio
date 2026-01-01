@@ -1,5 +1,4 @@
-// use server'
-
+'use server';
 /**
  * @fileOverview This file defines a Genkit flow for generating smart search filter suggestions
  * based on AI analysis of job descriptions.
