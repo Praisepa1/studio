@@ -1,214 +1,247 @@
-
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, Lightbulb, Users, FileText, Mail, Send, SearchCheck, UserCheck, LogIn, Sparkles } from "lucide-react";
+import {
+  ArrowRight, Briefcase, Users, FileText, Send,
+  Zap, CheckCircle2, LogIn, Bot, Activity, Cpu,
+} from "lucide-react";
 
-const FeatureCard = ({
-  icon: Icon,
-  title,
-  description,
-  href,
-  comingSoon,
-}: {
-  icon: React.ElementType;
-  title: string;
-  description: string;
-  href: string;
-  comingSoon?: boolean;
-}) => (
-  <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
-    <CardHeader className="flex-row items-center gap-4 pb-4">
-      <div className="bg-primary/10 p-3 rounded-full">
-        <Icon className="w-6 h-6 text-primary" />
-      </div>
-      <CardTitle className="text-xl">{title}</CardTitle>
-    </CardHeader>
-    <CardContent className="flex-grow">
-      <p className="text-muted-foreground">{description}</p>
-    </CardContent>
-    <CardContent className="pt-0">
-       <Button asChild variant="outline" className="w-full group">
-        <Link href={href}>
-          {comingSoon ? "Learn More" : "Explore Feature"}
-          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-        </Link>
-      </Button>
-      {comingSoon && <p className="text-xs text-center text-amber-600 mt-2">Coming Soon!</p>}
-    </CardContent>
-  </Card>
-);
+const features = [
+  {
+    icon: Briefcase,
+    title: "Upwork Gig Scraper",
+    description: "Automatically find and score Upwork opportunities. AI analysis extracts pain points, client tone, and conversion potential for every gig.",
+    href: "/upwork-gigs",
+  },
+  {
+    icon: Users,
+    title: "Lead Generation",
+    description: "Discover prospects from LinkedIn, Facebook, and more. AI builds a behavioral profile and suggests the strongest outreach angle.",
+    href: "/leads",
+  },
+  {
+    icon: FileText,
+    title: "Proposal Generator",
+    description: "Generate winning Upwork proposals in 4 styles. Use Gemini, Claude, or the dual-AI pipeline where Gemini drafts and Claude refines.",
+    href: "/proposals",
+  },
+  {
+    icon: Send,
+    title: "Outreach Generator",
+    description: "Create personalized first messages, follow-ups, and closing messages tailored to each lead's communication style and business needs.",
+    href: "/outreach",
+  },
+  {
+    icon: Bot,
+    title: "Dual-AI Pipeline",
+    description: "Use Gemini for fast planning and initial drafts. Use Claude for persuasion, refinement, and final polish. Or let the pipeline do both.",
+    href: "/ai-studio",
+  },
+  {
+    icon: Activity,
+    title: "Feedback & Learning",
+    description: "Rate every generated output. The system tracks which providers, styles, and tones perform best for your specific use case.",
+    href: "/feedback",
+  },
+];
+
+const steps = [
+  {
+    n: "01",
+    title: "Scrape Opportunities",
+    description: "Run the Upwork scraper or lead finder. AI scores, classifies, and enriches every result instantly.",
+  },
+  {
+    n: "02",
+    title: "Generate with AI",
+    description: "Select a gig or lead, choose your provider strategy, and generate tailored proposals or outreach messages in seconds.",
+  },
+  {
+    n: "03",
+    title: "Send & Improve",
+    description: "Send your winning content. Rate the output, track outcomes, and let the feedback loop improve every future generation.",
+  },
+];
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="py-16 md:py-24 bg-gradient-to-br from-background via-primary/5 to-background">
+    <div className="min-h-screen bg-background">
+      {/* Nav */}
+      <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-sm">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <Zap className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-[15px] font-bold tracking-tight">JobJet</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/auth?view=login"><LogIn className="mr-1.5 h-4 w-4" />Login</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/auth?view=signup">Get Started Free <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+            </Button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="py-20 md:py-32">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-            Land Your Dream Job <span className="text-primary">Faster</span> with JobJet
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-6">
+            <Zap className="h-3.5 w-3.5" />
+            Powered by Gemini + Claude dual-AI pipeline
+          </div>
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground mb-6 max-w-4xl mx-auto">
+            Win more clients with{" "}
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              AI-powered proposals
+            </span>{" "}
+            and outreach
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-10">
-            Your AI-powered copilot for smart job searching, profile optimization, and creating standout applications for platforms like Upwork & LinkedIn.
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+            JobJet scrapes Upwork gigs and LinkedIn leads, analyzes client psychology, and generates
+            personalized proposals that convert — using both Gemini and Claude intelligently.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-            <Button asChild size="lg" className="shadow-lg hover:shadow-primary/40 transition-shadow">
-              <Link href="/auth?view=signup"> 
-                Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
+          <div className="flex flex-col sm:flex-row justify-center gap-3">
+            <Button asChild size="lg" className="shadow-lg text-base">
+              <Link href="/auth?view=signup">
+                Start for Free <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="shadow-md">
-              <Link href="/auth?view=login"> 
-                <LogIn className="mr-2 h-5 w-5" /> Login
+            <Button asChild variant="outline" size="lg" className="text-base">
+              <Link href="/dashboard">
+                View Dashboard
               </Link>
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Why JobJet? Section */}
-      <section className="py-16 bg-background">
+      {/* Features */}
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-4 text-foreground">Why Choose JobJet?</h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Stop wasting time on tedious tasks. JobJet empowers you to focus on what truly matters – landing the perfect job.
-          </p>
+          <div className="text-center mb-14">
+            <h2 className="text-3xl font-bold mb-3">Everything you need to win</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              A complete AI platform for freelancers and agencies to find, qualify, and close clients faster.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((f) => (
+              <Link key={f.href} href={f.href} className="group">
+                <div className="h-full rounded-xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/50 transition-all">
+                  <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <f.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-2">{f.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* AI Providers */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-accent/5 border p-8 md:p-12">
+            <div className="grid md:grid-cols-2 gap-10 items-center">
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Cpu className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-semibold text-primary uppercase tracking-wide">Dual-AI Architecture</span>
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                  Gemini drafts. Claude refines. You win.
+                </h2>
+                <p className="text-muted-foreground mb-6 leading-relaxed">
+                  Use each model where it excels. Gemini provides fast broad planning and first drafts.
+                  Claude applies deeper reasoning, persuasion, and polish. Together they outperform either alone.
+                </p>
+                <div className="space-y-2">
+                  {[
+                    "Gemini-only mode for fast iteration",
+                    "Claude-only mode for maximum quality",
+                    "Gemini → Claude pipeline for best output",
+                    "Automatic fallback if one provider fails",
+                  ].map((point) => (
+                    <div key={point} className="flex items-center gap-2 text-sm">
+                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                      <span>{point}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-xl border bg-card p-5 shadow-sm">
+                  <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2">GEMINI</div>
+                  <p className="text-xs text-muted-foreground">Planning · Summarization · Fast drafts · Classification · Variation brainstorming</p>
+                </div>
+                <div className="rounded-xl border bg-card p-5 shadow-sm">
+                  <div className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-2">CLAUDE</div>
+                  <p className="text-xs text-muted-foreground">Deep writing · Proposal refinement · Persuasion · Structured reasoning · Final polish</p>
+                </div>
+                <div className="col-span-2 rounded-xl border-2 border-primary/20 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 p-5 shadow-sm">
+                  <div className="text-xs font-semibold text-primary mb-2">GEMINI → CLAUDE PIPELINE</div>
+                  <p className="text-xs text-muted-foreground">Gemini generates first draft → Claude refines for persuasion and naturalness → You get the best of both models</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-14">How it works</h2>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="flex flex-col items-center text-center p-6 bg-card rounded-lg shadow-md">
-              <div className="p-3 bg-primary/10 rounded-full mb-4">
-                <Lightbulb className="h-8 w-8 text-primary" />
+            {steps.map((step) => (
+              <div key={step.n} className="text-center">
+                <div className="text-5xl font-black text-primary/20 mb-4">{step.n}</div>
+                <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">Work Smarter, Not Harder</h3>
-              <p className="text-muted-foreground">Leverage AI to automate repetitive tasks and gain a competitive edge in your job search.</p>
-            </div>
-            <div className="flex flex-col items-center text-center p-6 bg-card rounded-lg shadow-md">
-              <div className="p-3 bg-primary/10 rounded-full mb-4">
-                <Sparkles className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">Stand Out from the Crowd</h3>
-              <p className="text-muted-foreground">Craft perfectly tailored resumes, cover letters, and profiles that capture attention.</p>
-            </div>
-            <div className="flex flex-col items-center text-center p-6 bg-card rounded-lg shadow-md">
-              <div className="p-3 bg-primary/10 rounded-full mb-4">
-                <CheckCircle className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">Maximize Your Opportunities</h3>
-              <p className="text-muted-foreground">Discover relevant jobs and optimize your applications for higher success rates.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Features Section */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-foreground">Powerful AI Tools at Your Fingertips</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <FeatureCard
-              icon={SearchCheck}
-              title="Smart Search"
-              description="Discover hidden job gems with AI-driven matching and filter suggestions."
-              href="/smart-search"
-            />
-            <FeatureCard
-              icon={UserCheck}
-              title="Profile Optimizer"
-              description="Craft compelling Upwork & LinkedIn profiles tailored to specific job descriptions."
-              href="/profile-optimizer"
-            />
-            <FeatureCard
-              icon={FileText}
-              title="Resume Generator"
-              description="Generate professional, ATS-friendly resumes that highlight your strengths."
-              href="/resume-generator"
-            />
-            <FeatureCard
-              icon={Mail}
-              title="Cover Letter Generator"
-              description="Write persuasive and personalized cover letters in minutes, not hours."
-              href="/cover-letter-generator"
-            />
-            <FeatureCard
-              icon={Send}
-              title="Automated Application"
-              description="Streamline job submissions directly to platforms (feature in development)."
-              href="/automated-application"
-              comingSoon
-            />
-             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center justify-center text-center p-6 md:p-8 bg-primary/5">
-              <Image 
-                src="https://placehold.co/300x200.png" 
-                alt="AI working on tasks" 
-                width={300} 
-                height={200} 
-                className="rounded-lg mb-6 shadow-md"
-                data-ai-hint="AI assistant work"
-              />
-              <h3 className="text-xl font-semibold mb-2 text-primary">And More to Come!</h3>
-              <p className="text-muted-foreground">We're constantly innovating to bring you the best AI job search tools.</p>
-            </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-foreground">Get Started in 3 Simple Steps</h2>
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            <div className="p-6">
-              <div className="relative mb-4">
-                <div className="absolute -top-2 -left-2 text-6xl font-bold text-primary/20">01</div>
-                <Users className="h-12 w-12 text-primary mx-auto mb-2 relative" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">Connect & Configure</h3>
-              <p className="text-muted-foreground">Link your job platform accounts (conceptually) and set up your core profile information in JobJet settings.</p>
-            </div>
-            <div className="p-6">
-               <div className="relative mb-4">
-                <div className="absolute -top-2 -left-2 text-6xl font-bold text-primary/20">02</div>
-                <Sparkles className="h-12 w-12 text-primary mx-auto mb-2 relative" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">Utilize AI Tools</h3>
-              <p className="text-muted-foreground">Use Smart Search, generate resumes, cover letters, and optimize your professional profiles with AI assistance.</p>
-            </div>
-            <div className="p-6">
-              <div className="relative mb-4">
-                <div className="absolute -top-2 -left-2 text-6xl font-bold text-primary/20">03</div>
-                <Send className="h-12 w-12 text-primary mx-auto mb-2 relative" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">Apply with Confidence</h3>
-              <p className="text-muted-foreground">Submit high-quality applications quickly and efficiently, maximizing your chances of success.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Final CTA Section */}
-      <section className="py-16 md:py-24 bg-primary text-primary-foreground">
+      {/* CTA */}
+      <section className="py-24 bg-gradient-to-r from-primary to-accent text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Supercharge Your Job Hunt?</h2>
-          <p className="text-lg md:text-xl opacity-90 max-w-2xl mx-auto mb-10">
-            Join JobJet today and transform your job search experience. It's time to let AI work for you.
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to start winning more clients?
+          </h2>
+          <p className="text-lg opacity-90 mb-8 max-w-xl mx-auto">
+            Join JobJet and let AI handle the research, analysis, and writing — so you can focus on closing deals.
           </p>
-          <Button asChild size="lg" variant="secondary" className="text-primary-foreground bg-background hover:bg-background/90 shadow-lg">
-            <Link href="/auth?view=signup"> 
-              Sign Up Now & Get Started <ArrowRight className="ml-2 h-5 w-5" />
+          <Button asChild size="lg" variant="secondary" className="text-primary font-bold shadow-lg">
+            <Link href="/auth?view=signup">
+              Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
         </div>
       </section>
 
-      {/* Footer Placeholder - The AppShell might already provide a footer or this can be enhanced */}
-      <footer className="py-8 bg-card border-t">
-        <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
-          <p>&copy; {new Date().getFullYear()} JobJet. All rights reserved.</p>
-          <p className="mt-1">
-            <Link href="#" className="hover:text-primary">Privacy Policy</Link> | <Link href="#" className="hover:text-primary">Terms of Service</Link>
-          </p>
+      {/* Footer */}
+      <footer className="py-8 border-t bg-card">
+        <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded bg-primary flex items-center justify-center">
+              <Zap className="h-3 w-3 text-white" />
+            </div>
+            <span className="font-semibold">JobJet</span>
+          </div>
+          <p>© {new Date().getFullYear()} JobJet. All rights reserved.</p>
+          <div className="flex gap-4">
+            <Link href="#" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link href="#" className="hover:text-foreground transition-colors">Terms</Link>
+          </div>
         </div>
       </footer>
     </div>

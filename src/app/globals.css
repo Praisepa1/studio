@@ -3,101 +3,108 @@
 @tailwind utilities;
 
 body {
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 @layer base {
   :root {
-    --background: 210 20% 96%; /* Light gray #F0F2F5 */
-    --foreground: 220 10% 20%; /* Darker gray for text */
-
-    --muted: 210 20% 88%;
-    --muted-foreground: 220 10% 40%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 10% 20%;
+    /* Core */
+    --background: 220 14% 96%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 10% 20%;
+    --card-foreground: 222 47% 11%;
 
-    --border: 210 20% 85%;
-    --input: 210 20% 80%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 207 89% 70%; /* Soft blue #64B5F6 */
-    --primary-foreground: 207 100% 15%; /* Dark blue text on soft blue bg */
+    /* Primary — strong blue */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 20% 90%;
-    --secondary-foreground: 207 89% 40%; /* Darker blue for secondary elements */
+    /* Secondary */
+    --secondary: 217 91% 95%;
+    --secondary-foreground: 221 83% 40%;
 
-    --accent: 261 45% 63%; /* Muted purple #9575CD */
-    --accent-foreground: 261 100% 98%; /* Almost white text on purple bg */
+    /* Muted */
+    --muted: 214 32% 91%;
+    --muted-foreground: 215 16% 47%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    /* Accent — vivid purple */
+    --accent: 263 70% 50%;
+    --accent-foreground: 0 0% 100%;
 
-    --ring: 207 89% 60%; /* Ring color based on primary */
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & inputs */
+    --border: 214 32% 89%;
+    --input: 214 32% 89%;
+    --ring: 221 83% 53%;
     --radius: 0.5rem;
 
-    /* Sidebar specific colors */
-    --sidebar-background: 220 10% 15%; /* Darker sidebar */
-    --sidebar-foreground: 220 10% 80%;
-    --sidebar-primary: 207 89% 70%; /* Soft blue for active items in sidebar */
-    --sidebar-primary-foreground: 207 100% 15%; /* Text on sidebar primary */
-    --sidebar-accent: 220 10% 25%; /* Hover bg for sidebar items */
-    --sidebar-accent-foreground: 220 10% 90%; /* Text on sidebar accent */
-    --sidebar-border: 220 10% 20%;
-    --sidebar-ring: 207 89% 60%;
+    /* Charts */
+    --chart-1: 221 83% 53%;
+    --chart-2: 263 70% 50%;
+    --chart-3: 142 71% 45%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 0 84% 60%;
+
+    /* Sidebar — dark navy */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 30% 75%;
+    --sidebar-primary: 221 83% 65%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 217 32% 18%;
+    --sidebar-accent-foreground: 210 30% 90%;
+    --sidebar-border: 217 32% 18%;
+    --sidebar-ring: 221 83% 65%;
   }
 
   .dark {
-    --background: 220 10% 12%;
-    --foreground: 210 20% 96%;
+    --background: 222 47% 9%;
+    --foreground: 210 30% 95%;
 
-    --muted: 220 10% 20%;
-    --muted-foreground: 210 20% 70%;
+    --card: 222 47% 12%;
+    --card-foreground: 210 30% 95%;
 
-    --popover: 220 10% 10%;
-    --popover-foreground: 210 20% 96%;
+    --popover: 222 47% 10%;
+    --popover-foreground: 210 30% 95%;
 
-    --card: 220 10% 10%;
-    --card-foreground: 210 20% 96%;
+    --primary: 221 83% 62%;
+    --primary-foreground: 0 0% 100%;
 
-    --border: 220 10% 25%;
-    --input: 220 10% 25%;
+    --secondary: 217 32% 18%;
+    --secondary-foreground: 210 30% 90%;
 
-    --primary: 207 89% 65%; /* Slightly adjusted blue for dark mode */
-    --primary-foreground: 207 100% 10%;
+    --muted: 217 32% 18%;
+    --muted-foreground: 215 16% 56%;
 
-    --secondary: 220 10% 22%;
-    --secondary-foreground: 207 89% 75%;
+    --accent: 263 70% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    --accent: 261 45% 58%; /* Slightly adjusted purple for dark mode */
-    --accent-foreground: 261 100% 96%;
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 98%;
+    --border: 217 32% 22%;
+    --input: 217 32% 22%;
+    --ring: 221 83% 62%;
 
-    --ring: 207 89% 55%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-1: 221 83% 62%;
+    --chart-2: 263 70% 60%;
+    --chart-3: 142 71% 50%;
+    --chart-4: 38 92% 55%;
+    --chart-5: 0 72% 55%;
 
-    /* Sidebar specific colors for dark mode */
-    --sidebar-background: 220 10% 10%; 
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 207 89% 65%;
-    --sidebar-primary-foreground: 207 100% 10%;
-    --sidebar-accent: 220 10% 20%;
-    --sidebar-accent-foreground: 210 20% 95%;
-    --sidebar-border: 220 10% 15%;
-    --sidebar-ring: 207 89% 55%;
+    --sidebar-background: 222 47% 8%;
+    --sidebar-foreground: 210 30% 75%;
+    --sidebar-primary: 221 83% 65%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 217 32% 16%;
+    --sidebar-accent-foreground: 210 30% 92%;
+    --sidebar-border: 217 32% 16%;
+    --sidebar-ring: 221 83% 65%;
   }
 }
 
@@ -107,9 +114,49 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-    /* Subtle transitions for feedback */
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-property: color, background-color, border-color;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 150ms;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Score badge utilities */
+  .score-high {
+    @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
+  }
+  .score-mid {
+    @apply bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400;
+  }
+  .score-low {
+    @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
+  }
+
+  /* Status badge utilities */
+  .status-new {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400;
+  }
+  .status-active {
+    @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
+  }
+  .status-pending {
+    @apply bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400;
+  }
+  .status-done {
+    @apply bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300;
+  }
+
+  /* Provider badge */
+  .provider-gemini {
+    @apply bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300;
+  }
+  .provider-claude {
+    @apply bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300;
+  }
+  .provider-pipeline {
+    @apply bg-gradient-to-r from-blue-100 to-purple-100 text-purple-700 dark:from-blue-900/30 dark:to-purple-900/30 dark:text-purple-300;
   }
 }
