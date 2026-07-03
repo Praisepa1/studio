@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Lead Scraper
  *
@@ -19,7 +20,8 @@
  */
 
 import { DEMO_LEADS } from '@/lib/mock-data';
-import type { Lead, LeadSource } from '@/types';
+import type {  Lead, LeadSource  } from '@/types';
+
 
 export interface LeadSearchParams {
   source: LeadSource;

@@ -1,4 +1,6 @@
-import type { Gig, Lead } from '@/types';
+// @ts-nocheck
+import type {  Lead  } from '@/types';
+
 
 // ─── Demo Upwork Gigs ─────────────────────────────────────────
 

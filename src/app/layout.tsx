@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'JobJet - Automate Your Job Search',
-  description: 'AI-powered job search and application automation on Upwork and LinkedIn.',
+  title: 'JobJet - B2B Lead Discovery & Intelligence',
+  description: 'AI-powered B2B lead discovery, company intelligence, and automated outreach pipeline.',
 };
 
 export default function RootLayout({

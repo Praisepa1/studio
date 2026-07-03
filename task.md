@@ -1,0 +1,23 @@
+- [x] **Sub-prompt 2A: Classifier**
+  - [x] Create `src/core/classifier/types.ts`
+  - [x] Create `src/core/classifier/rules.ts`
+  - [x] Create `src/core/classifier/ai-classifier.ts`
+  - [x] Create `src/core/classifier/index.ts`
+- [x] **Sub-prompt 2B & 2C: Extractors**
+  - [x] Create `src/core/extractor/contacts.ts`
+  - [x] Create `src/core/extractor/technology.ts`
+  - [x] Create `src/core/extractor/social.ts`
+  - [x] Create `src/core/extractor/jobs.ts`
+  - [x] Create `src/core/extractor/company.ts`
+  - [x] Create `src/core/extractor/index.ts`
+- [x] **Sub-prompt 2D: Tests**
+  - [x] Create `src/core/classifier/__tests__/rules.test.ts`
+  - [x] Create `src/core/classifier/__tests__/ai-classifier.test.ts`
+  - [x] Create `src/core/extractor/__tests__/contacts.test.ts`
+  - [x] Create `src/core/extractor/__tests__/technology.test.ts`
+  - [x] Create `src/core/extractor/__tests__/social.test.ts`
+  - [x] Create `src/core/extractor/__tests__/jobs.test.ts`
+  - [x] Create `src/core/extractor/__tests__/company.test.ts`
+- [ ] **Verification**
+  - [ ] Run `npm run test`
+  - [ ] Run `npm run typecheck`
