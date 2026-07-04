@@ -1,0 +1,203 @@
+"use client";
+
+import { Company } from "@/types/company";
+import { ScoreBadge } from "./score-badge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ExternalLink, Sparkles, Download, MapPin, Building2, Layers } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface CompanyCardProps {
+  company: any; // Using any to support enriched / scored fields
+  onEnrich?: () => void;
+  onExport?: () => void;
+}
+
+const signalLabels: Record<string, string> = {
+  no_ssl: "No SSL",
+  no_mobile_viewport: "No Mobile",
+  stale_copyright: "Stale Copyright",
+  broken_internal_links: "Broken Links",
+  no_analytics_detected: "No Analytics",
+  slow_load_time: "Slow Load",
+  unmaintained_stack: "Unmaintained Stack",
+  active_hiring: "Active Hiring",
+  recent_news_mention: "Recent News",
+  modern_stack: "Modern Stack",
+  clear_contact_path: "Clear Contact",
+  ecommerce: "E-Commerce",
+};
+
+export function CompanyCard({ company, onEnrich, onExport }: CompanyCardProps) {
+  const score = company.score ?? 50;
+  const isHiring = company.isActivelyHiring === true || company.hiringStatus === "active";
+  const hiringStatus = isHiring ? "active" : (company.hiringStatus === "passive" ? "passive" : "unknown");
+
+  // Get enrichment fields
+  const enrichment = company.enrichment;
+  const oneLiner = enrichment?.one_liner || company.description || "No description available.";
+
+  // Extract top 3 present buying signals
+  const signals = (company.buyingSignals || company.buying_signals?.signals || [])
+    .filter((s: any) => s.present)
+    .slice(0, 3);
+
+  // Tech stack
+  const techStack = company.techStack || [];
+  const visibleTech = techStack.slice(0, 3);
+  const remainingTechCount = techStack.length - visibleTech.length;
+
+  return (
+    <TooltipProvider>
+      <Card className="w-full flex flex-col justify-between shadow-sm border border-border hover:shadow-md transition-shadow duration-200 bg-card">
+        {/* Header */}
+        <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
+          <div className="space-y-1 pr-4">
+            <h3 className="font-bold text-lg leading-tight tracking-tight text-foreground line-clamp-1">
+              {company.name}
+            </h3>
+            {company.domain && (
+              <a
+                href={company.domain.startsWith("http") ? company.domain : `https://${company.domain}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-xs text-primary hover:underline font-medium"
+              >
+                {company.domain.replace(/^https?:\/\/(www\.)?/, "")}
+                <ExternalLink className="ml-1 h-3 w-3 shrink-0" />
+              </a>
+            )}
+          </div>
+          <ScoreBadge score={score} size="md" />
+        </CardHeader>
+
+        {/* Body */}
+        <CardContent className="space-y-3 pb-3 flex-1">
+          {/* Metadata Row */}
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground items-center">
+            {company.industry && (
+              <Badge variant="secondary" className="px-2 py-0.5 font-medium rounded">
+                {company.industry}
+              </Badge>
+            )}
+            {company.location && (
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                {company.location}
+              </span>
+            )}
+            {company.size && (
+              <span className="flex items-center gap-1">
+                <Building2 className="h-3.5 w-3.5 shrink-0" />
+                {company.size}
+              </span>
+            )}
+          </div>
+
+          {/* One Liner */}
+          <p className="text-sm italic text-muted-foreground leading-relaxed line-clamp-2 min-h-[40px]">
+            {oneLiner}
+          </p>
+
+          {/* Signals Row */}
+          {signals.length > 0 && (
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground/75">
+                Buying Signals
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {signals.map((sig: any) => {
+                  const isPositive = sig.weight > 0;
+                  return (
+                    <Tooltip key={sig.type}>
+                      <TooltipTrigger asChild>
+                        <span
+                          className={cn(
+                            "cursor-help px-2 py-0.5 rounded text-[11px] font-medium border transition-colors",
+                            isPositive
+                              ? "bg-green-50/50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/30"
+                              : "bg-red-50/50 text-red-700 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30"
+                          )}
+                        >
+                          {signalLabels[sig.type] || sig.type}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[250px] p-2 text-xs">
+                        <p className="font-semibold mb-0.5">{signalLabels[sig.type] || sig.type}</p>
+                        <p className="text-muted-foreground">{sig.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </CardContent>
+
+        {/* Footer */}
+        <CardFooter className="pt-3 border-t border-border/50 flex flex-col gap-3">
+          <div className="flex items-center justify-between w-full text-xs">
+            {/* Hiring Status */}
+            <div>
+              {hiringStatus === "active" ? (
+                <span className="inline-flex items-center gap-1.5 font-semibold text-green-600 dark:text-green-400">
+                  <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  Active Hiring
+                </span>
+              ) : hiringStatus === "passive" ? (
+                <span className="inline-flex items-center gap-1.5 font-medium text-yellow-600 dark:text-yellow-400">
+                  <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                  Passive Hiring
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                  <span className="h-2 w-2 rounded-full bg-muted-foreground/30" />
+                  Unknown Hiring
+                </span>
+              )}
+            </div>
+
+            {/* Tech Stack Chips */}
+            {visibleTech.length > 0 && (
+              <div className="flex items-center gap-1 text-muted-foreground max-w-[60%]">
+                <Layers className="h-3.5 w-3.5 shrink-0" />
+                <div className="flex gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                  {visibleTech.join(", ")}
+                  {remainingTechCount > 0 && ` +${remainingTechCount}`}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 w-full">
+            {!enrichment && onEnrich && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onEnrich}
+                className="flex-1 text-xs font-semibold gap-1.5"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                Enrich
+              </Button>
+            )}
+            {onExport && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onExport}
+                className={cn("text-xs font-semibold gap-1.5", !enrichment && onEnrich ? "w-auto" : "flex-1")}
+              >
+                <Download className="h-3.5 w-3.5" />
+                Export
+              </Button>
+            )}
+          </div>
+        </CardFooter>
+      </Card>
+    </TooltipProvider>
+  );
+}

@@ -29,14 +29,22 @@ const navGroups = [
     ],
   },
   {
-    label: "Intelligence",
+    label: "Discovery",
     items: [
-      { href: "/upwork-gigs", icon: Briefcase, label: "Upwork Gigs" },
-      { href: "/leads", icon: Users, label: "Lead Generation" },
+      { href: "/discovery", icon: SearchCheck, label: "Search & Discover" },
+      { href: "/companies", icon: Briefcase, label: "Companies" },
+      { href: "/jobs", icon: Briefcase, label: "Jobs" },
     ],
   },
   {
-    label: "Creation",
+    label: "Leads",
+    items: [
+      { href: "/leads", icon: Users, label: "Lead Database" },
+      { href: "/crm", icon: UserCheck, label: "CRM" },
+    ],
+  },
+  {
+    label: "Generation",
     items: [
       { href: "/proposals", icon: FileText, label: "Proposals" },
       { href: "/outreach", icon: Send, label: "Outreach" },
@@ -45,18 +53,18 @@ const navGroups = [
     ],
   },
   {
-    label: "Tools",
+    label: "Intelligence",
     items: [
-      { href: "/smart-search", icon: SearchCheck, label: "Smart Search" },
-      { href: "/profile-optimizer", icon: UserCheck, label: "Profile Optimizer" },
+      { href: "/ai-studio", icon: Cpu, label: "AI Studio" },
+      { href: "/analytics", icon: Activity, label: "Analytics" },
     ],
   },
   {
     label: "System",
     items: [
-      { href: "/ai-studio", icon: Cpu, label: "AI Studio" },
-      { href: "/scraping-jobs", icon: Activity, label: "Scraping Jobs" },
-      { href: "/feedback", icon: MessageSquare, label: "Feedback & Learning" },
+      { href: "/scraping-jobs", icon: Activity, label: "Pipeline Monitor" },
+      { href: "/feedback", icon: MessageSquare, label: "Feedback" },
+      { href: "/settings", icon: SettingsIcon, label: "Settings" },
     ],
   },
 ];
@@ -91,10 +99,10 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon: Icon, label, active, coll
     onClick={onClick}
     title={collapsed ? label : undefined}
     className={cn(
-      "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+      "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all duration-200",
       collapsed ? "justify-center px-2" : "",
       active
-        ? "bg-sidebar-accent text-white font-medium"
+        ? "bg-primary text-white font-semibold shadow-sm scale-[1.02]"
         : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-white"
     )}
   >
@@ -213,17 +221,19 @@ function Sidebar({ collapsed, mobileOpen, onClose, pathname }: SidebarProps) {
 function pageTitle(pathname: string): string {
   const map: Record<string, string> = {
     "/dashboard": "Dashboard",
-    "/upwork-gigs": "Upwork Gigs",
-    "/leads": "Lead Generation",
+    "/discovery": "Search & Discover",
+    "/companies": "Companies",
+    "/jobs": "Jobs",
+    "/leads": "Lead Database",
+    "/crm": "CRM",
     "/proposals": "Proposals",
     "/outreach": "Outreach",
-    "/resume-generator": "Resume Generator",
+    "/resume-generator": "Resume",
     "/cover-letter-generator": "Cover Letter",
-    "/smart-search": "Smart Search",
-    "/profile-optimizer": "Profile Optimizer",
     "/ai-studio": "AI Studio",
-    "/scraping-jobs": "Scraping Jobs",
-    "/feedback": "Feedback & Learning",
+    "/analytics": "Analytics",
+    "/scraping-jobs": "Pipeline Monitor",
+    "/feedback": "Feedback",
     "/settings": "Settings",
     "/": "Home",
   };

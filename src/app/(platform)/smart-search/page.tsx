@@ -99,7 +99,7 @@ export default function SmartSearchPage() {
         <Card className="shadow-md">
           <CardHeader>
             <CardTitle>Suggested Search Filters</CardTitle>
-            <CardDescription>Use these terms to refine your job search on platforms like LinkedIn or Upwork.</CardDescription>
+            <CardDescription>Use these terms to refine your job search on various job portals and platforms.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">

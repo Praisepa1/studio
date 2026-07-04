@@ -1,4 +1,13 @@
-import { URLCategory } from '@/types/search';
+export type URLCategory =
+  | 'company'
+  | 'job_board'
+  | 'ats'
+  | 'startup_directory'
+  | 'recruitment_agency'
+  | 'government'
+  | 'education'
+  | 'ngo'
+  | 'social_profile';
 
 export type Confidence = 'high' | 'medium' | 'low';
 export type RecommendedAction = 'crawl' | 'skip' | 'crawl_with_caution';

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -8,40 +7,56 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import {
-  Tabs, TabsContent, TabsList, TabsTrigger,
-} from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FileText, Zap, Copy, ThumbsUp, ThumbsDown, Edit3,
-  Loader2, RefreshCw, Clock, CheckCircle2, Cpu,
+  FileText,
+  Copy,
+  Edit3,
+  RefreshCw,
+  CheckCircle2,
+  ThumbsUp,
+  ThumbsDown,
+  Clock,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type {  Proposal, ProposalStyle, AIProvider  } from '@/types';
-
 import { cn } from "@/lib/utils";
+import type { Proposal, ProposalStyle, AIProvider } from "@/types";
 import { formatDistanceToNow } from "date-fns";
-
-const STORAGE_KEY = "jobjet_proposals";
 
 function loadProposals(): Proposal[] {
   if (typeof window === "undefined") return [];
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]"); } catch { return []; }
-}
-function saveProposals(p: Proposal[]) {
-  if (typeof window !== "undefined") localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+  try {
+    const stored = localStorage.getItem("jobjet_proposals");
+    return stored ? JSON.parse(stored) : [];
+  } catch (e) {
+    console.error("Failed to load proposals", e);
+    return [];
+  }
 }
 
-function providerLabel(p: AIProvider) {
-  if (p === "gemini") return "Gemini";
-  if (p === "claude") return "Claude";
-  return "Gemini → Claude";
+function saveProposals(proposals: Proposal[]) {
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("jobjet_proposals", JSON.stringify(proposals));
+    } catch (e) {
+      console.error("Failed to save proposals", e);
+    }
+  }
 }
-function providerClass(p: AIProvider) {
+
+// Mock icons
+const CopyIcon = Copy;
+const EditIcon = Edit3;
+
+function providerLabel(p: AIProvider): string {
+  if (p === "gemini") return "Gemini 2.0 Flash";
+  if (p === "claude") return "Claude 3.5 Sonnet";
+  return "Dual-AI Pipeline";
+}
+
+function providerClass(p: AIProvider): string {
   if (p === "gemini") return "provider-gemini";
   if (p === "claude") return "provider-claude";
   return "provider-pipeline";
@@ -50,11 +65,11 @@ function providerClass(p: AIProvider) {
 function ProposalsContent() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
-  const prefillGigTitle = searchParams.get("gigTitle") ?? "";
+  const prefillJobTitle = searchParams.get("jobTitle") ?? "";
 
-  const [gigTitle, setGigTitle] = useState(prefillGigTitle);
-  const [gigDescription, setGigDescription] = useState("");
-  const [gigSkills, setGigSkills] = useState("");
+  const [jobTitle, setJobTitle] = useState(prefillJobTitle);
+  const [jobDescription, setJobDescription] = useState("");
+  const [jobSkills, setJobSkills] = useState("");
   const [userSkills, setUserSkills] = useState("");
   const [style, setStyle] = useState<ProposalStyle>("premium");
   const [provider, setProvider] = useState<AIProvider>("gemini-claude");
@@ -66,12 +81,12 @@ function ProposalsContent() {
   const [activeTab, setActiveTab] = useState("generate");
 
   useEffect(() => {
-    setSavedProposals(loadProposals());
+    setSavedProposals(loadProposals() || []);
   }, []);
 
   const generate = useCallback(async () => {
-    if (!gigTitle.trim()) {
-      toast({ variant: "destructive", title: "Add a gig title" });
+    if (!jobTitle.trim()) {
+      toast({ variant: "destructive", title: "Add a job title" });
       return;
     }
     setLoading(true);
@@ -80,7 +95,12 @@ function ProposalsContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          gigTitle, gigDescription, gigSkills, userSkills, style, provider,
+          title: jobTitle,
+          description: jobDescription,
+          skills: jobSkills.split(",").map(s => s.trim()).filter(Boolean),
+          userSkills,
+          style,
+          provider,
         }),
       });
       if (!res.ok) throw new Error(await res.text());
@@ -93,15 +113,15 @@ function ProposalsContent() {
     } finally {
       setLoading(false);
     }
-  }, [gigTitle, gigDescription, gigSkills, userSkills, style, provider, toast]);
+  }, [jobTitle, jobDescription, jobSkills, userSkills, style, provider, toast]);
 
   const saveProposal = () => {
     if (!result?.content) return;
     const proposal: Proposal = {
       id: `prop-${Date.now()}`,
-      gigId: "manual",
-      gigTitle,
-      content: editing ? editContent : result.content,
+      jobId: "manual",
+      jobTitle,
+      content: editing ? editContent : (result.content ?? ""),
       style,
       provider,
       model: result.model,
@@ -126,8 +146,12 @@ function ProposalsContent() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        type: "proposal", referenceId: "current", referenceTitle: gigTitle,
-        rating: sentiment === "positive" ? 4 : 2, sentiment, provider,
+        type: "proposal",
+        referenceId: "current",
+        referenceTitle: jobTitle,
+        rating: sentiment === "positive" ? 5 : 1,
+        sentiment,
+        provider,
       }),
     });
     toast({ title: `Feedback recorded: ${sentiment}` });
@@ -138,14 +162,14 @@ function ProposalsContent() {
       <div>
         <h2 className="text-xl font-bold">Proposal Generator</h2>
         <p className="text-sm text-muted-foreground">
-          Generate Upwork proposals powered by Gemini, Claude, or the Gemini → Claude dual-AI pipeline
+          Generate project proposals powered by Gemini, Claude, or the Gemini → Claude dual-AI pipeline
         </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="generate">Generate</TabsTrigger>
-          <TabsTrigger value="saved">Saved ({savedProposals.length})</TabsTrigger>
+        <TabsList className="bg-muted p-1 rounded-lg">
+          <TabsTrigger value="generate" className="px-4 py-2 font-semibold">Generate Proposal</TabsTrigger>
+          <TabsTrigger value="saved" className="px-4 py-2 font-semibold">Saved Proposals</TabsTrigger>
         </TabsList>
 
         <TabsContent value="generate" className="space-y-4 mt-4">
@@ -154,25 +178,25 @@ function ProposalsContent() {
             <div className="lg:col-span-2 space-y-4">
               <Card className="shadow-sm">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold">Gig Details</CardTitle>
+                  <CardTitle className="text-sm font-semibold">Job / Project Details</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <Label className="text-xs">Gig Title *</Label>
+                    <Label className="text-xs">Project Title *</Label>
                     <Input
                       className="mt-1"
                       placeholder="e.g. React Developer for Dashboard Rebuild"
-                      value={gigTitle}
-                      onChange={(e) => setGigTitle(e.target.value)}
+                      value={jobTitle}
+                      onChange={(e) => setJobTitle(e.target.value)}
                     />
                   </div>
                   <div>
-                    <Label className="text-xs">Gig Description</Label>
+                    <Label className="text-xs">Project Description</Label>
                     <Textarea
                       className="mt-1 min-h-[100px] text-xs"
-                      placeholder="Paste the full gig description..."
-                      value={gigDescription}
-                      onChange={(e) => setGigDescription(e.target.value)}
+                      placeholder="Paste the full job description..."
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
                     />
                   </div>
                   <div>
@@ -180,8 +204,8 @@ function ProposalsContent() {
                     <Input
                       className="mt-1"
                       placeholder="React, TypeScript, Tailwind CSS"
-                      value={gigSkills}
-                      onChange={(e) => setGigSkills(e.target.value)}
+                      value={jobSkills}
+                      onChange={(e) => setJobSkills(e.target.value)}
                     />
                   </div>
                   <div>
@@ -196,54 +220,67 @@ function ProposalsContent() {
                 </CardContent>
               </Card>
 
+              {/* Settings Card */}
               <Card className="shadow-sm">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-1">
-                    <Cpu className="h-3.5 w-3.5 text-primary" /> AI Configuration
-                  </CardTitle>
+                  <CardTitle className="text-sm font-semibold">Settings</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <Label className="text-xs">Provider</Label>
-                    <Select value={provider} onValueChange={(v) => setProvider(v as AIProvider)}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="gemini">Gemini (Fast)</SelectItem>
-                        <SelectItem value="claude">Claude (Quality)</SelectItem>
-                        <SelectItem value="gemini-claude">Gemini → Claude (Best)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      {provider === "gemini-claude" ? "Gemini drafts, Claude refines. Requires both API keys." : ""}
-                      {provider === "claude" ? "Requires ANTHROPIC_API_KEY in .env" : ""}
-                      {provider === "gemini" ? "Uses GOOGLE_GENAI_API_KEY (default)" : ""}
-                    </p>
-                  </div>
-                  <div>
                     <Label className="text-xs">Proposal Style</Label>
-                    <Select value={style} onValueChange={(v) => setStyle(v as ProposalStyle)}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="premium">Premium / Consultative</SelectItem>
-                        <SelectItem value="concise">Concise & Punchy</SelectItem>
-                        <SelectItem value="technical">Technical & Precise</SelectItem>
-                        <SelectItem value="friendly">Friendly & Personal</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      {["premium", "technical", "concise", "friendly"].map((s) => (
+                        <Button
+                          key={s}
+                          type="button"
+                          variant={style === s ? "default" : "outline"}
+                          className="text-xs capitalize font-medium py-1 h-8"
+                          onClick={() => setStyle(s as ProposalStyle)}
+                        >
+                          {s}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
+
+                  <div>
+                    <Label className="text-xs">AI Provider Model</Label>
+                    <div className="flex flex-col gap-1.5 mt-1">
+                      {[
+                        { id: "gemini", label: "Gemini 2.0 Flash (Fast)" },
+                        { id: "claude", label: "Claude 3.5 Sonnet (Refined)" },
+                        { id: "gemini-claude", label: "Dual-AI Pipeline (Premium)" },
+                      ].map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          className={cn(
+                            "flex items-center justify-between text-left text-xs p-2.5 rounded border transition-colors",
+                            provider === p.id
+                              ? "border-primary bg-primary/5 text-primary font-semibold"
+                              : "border-border hover:bg-muted/40 text-muted-foreground"
+                          )}
+                          onClick={() => setProvider(p.id as AIProvider)}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <Button
-                    className="w-full"
+                    className="w-full mt-2 font-semibold"
                     onClick={generate}
                     disabled={loading}
                   >
-                    {loading
-                      ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generating...</>
-                      : <><Zap className="h-4 w-4 mr-2" /> Generate Proposal</>
-                    }
+                    {loading ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      "Generate Proposal"
+                    )}
                   </Button>
                 </CardContent>
               </Card>
@@ -259,7 +296,7 @@ function ProposalsContent() {
                     </div>
                     <h3 className="font-semibold mb-1">No proposal yet</h3>
                     <p className="text-sm text-muted-foreground max-w-xs">
-                      Fill in the gig details and click Generate. The Gemini → Claude pipeline produces the highest quality output.
+                      Fill in the project details and click Generate. The Gemini → Claude pipeline produces the highest quality output.
                     </p>
                   </CardContent>
                 </Card>
@@ -323,17 +360,17 @@ function ProposalsContent() {
 
                     {/* Actions */}
                     <div className="flex flex-wrap gap-2">
-                      <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => copyToClipboard(editing ? editContent : (result.content ?? ""))}>
-                        <Copy className="h-3.5 w-3.5 mr-1" /> Copy
+                      <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => copyToClipboard(editing ? editContent : (result.content ?? ""))}>
+                        <CopyIcon className="h-3.5 w-3.5" /> Copy
                       </Button>
-                      <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setEditing((e) => !e)}>
-                        <Edit3 className="h-3.5 w-3.5 mr-1" /> {editing ? "Done" : "Edit"}
+                      <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => setEditing((e) => !e)}>
+                        <EditIcon className="h-3.5 w-3.5" /> {editing ? "Done" : "Edit"}
                       </Button>
-                      <Button variant="outline" size="sm" className="h-8 text-xs" onClick={generate} disabled={loading}>
-                        <RefreshCw className="h-3.5 w-3.5 mr-1" /> Regenerate
+                      <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={generate} disabled={loading}>
+                        <RefreshCw className="h-3.5 w-3.5" /> Regenerate
                       </Button>
-                      <Button size="sm" className="h-8 text-xs" onClick={saveProposal}>
-                        <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Save
+                      <Button size="sm" className="h-8 text-xs gap-1" onClick={saveProposal}>
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Save
                       </Button>
                     </div>
                     {/* Feedback */}
@@ -367,7 +404,7 @@ function ProposalsContent() {
                 <CardContent className="pt-4">
                   <div className="flex items-start justify-between gap-2 flex-wrap">
                     <div>
-                      <p className="text-sm font-semibold">{p.gigTitle || "Untitled"}</p>
+                      <p className="text-sm font-semibold">{p.jobTitle || "Untitled"}</p>
                       <div className="flex gap-1.5 mt-1 flex-wrap">
                         <Badge className={cn("text-[10px] border-0", providerClass(p.provider))}>
                           {providerLabel(p.provider)}
@@ -386,10 +423,10 @@ function ProposalsContent() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="mt-2 h-7 text-xs"
+                    className="mt-2 h-7 text-xs gap-1"
                     onClick={() => copyToClipboard(p.editedContent || p.content)}
                   >
-                    <Copy className="h-3 w-3 mr-1" /> Copy
+                    <CopyIcon className="h-3 w-3" /> Copy
                   </Button>
                 </CardContent>
               </Card>
@@ -403,7 +440,7 @@ function ProposalsContent() {
 
 export default function ProposalsPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-32"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
+    <Suspense fallback={<div>Loading Page...</div>}>
       <ProposalsContent />
     </Suspense>
   );

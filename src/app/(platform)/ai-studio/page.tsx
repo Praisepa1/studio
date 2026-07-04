@@ -66,14 +66,14 @@ const PROMPT_TEMPLATES: PromptTemplate[] = [
   {
     id: "proposal-concise",
     label: "Proposal — Concise",
-    description: "Short, punchy Upwork proposal (150-200 words)",
-    template: "Write a concise Upwork proposal for a [GIG TITLE] role. Skills: [SKILLS]. Client needs: [PAIN POINTS]. Keep it under 200 words, lead with their problem, end with a low-friction CTA.",
+    description: "Short, punchy proposal (150-200 words)",
+    template: "Write a concise proposal for a [JOB TITLE] role. Skills: [SKILLS]. Client needs: [PAIN POINTS]. Keep it under 200 words, lead with their problem, end with a low-friction CTA.",
   },
   {
     id: "proposal-premium",
     label: "Proposal — Premium",
     description: "Consultative premium proposal (250-320 words)",
-    template: "You are a high-value consultant. Write a premium Upwork proposal for [GIG TITLE]. Diagnose their business problem, position as an expert, include 2-3 proof points. Be specific, no filler.",
+    template: "You are a high-value consultant. Write a premium proposal for [JOB TITLE]. Diagnose their business problem, position as an expert, include 2-3 proof points. Be specific, no filler.",
   },
   {
     id: "outreach-first",
@@ -88,10 +88,10 @@ const PROMPT_TEMPLATES: PromptTemplate[] = [
     template: "Analyze this lead: [NAME] is [ROLE] at [COMPANY]. Bio: [BIO]. Return their likely pain points, communication style, best outreach angle, and confidence level for each inference.",
   },
   {
-    id: "gig-analysis",
-    label: "Gig Analysis",
-    description: "Upwork gig intelligence breakdown",
-    template: "Analyze this Upwork gig: [TITLE]. Description: [DESCRIPTION]. Return: pain points, client tone, best proposal angle, conversion likelihood, and recommended proposal style.",
+    id: "job-analysis",
+    label: "Job Analysis",
+    description: "Job portal intelligence breakdown",
+    template: "Analyze this job: [TITLE]. Description: [DESCRIPTION]. Return: pain points, client tone, best proposal angle, conversion likelihood, and recommended proposal style.",
   },
 ];
 
@@ -129,9 +129,9 @@ export default function AIStudioPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          gigTitle: "AI Studio Test",
-          gigDescription: prompt,
-          gigSkills: "",
+          title: "AI Studio Test",
+          description: prompt,
+          skills: [],
           userSkills: "",
           style: "concise",
           provider: selectedProvider,

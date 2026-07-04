@@ -7,30 +7,32 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
-      gigTitle = "",
-      gigDescription = "",
-      gigSkills = "",
+      title = "",
+      description = "",
+      budget = "not specified",
+      skills = [],
       userSkills = "",
       style = "premium",
       provider = "gemini",
     } = body as {
-      gigTitle: string;
-      gigDescription: string;
-      gigSkills: string;
-      userSkills: string;
+      title: string;
+      description: string;
+      budget?: string;
+      skills?: string[];
+      userSkills?: string;
       style: ProposalStyle;
       provider: AIProvider;
     };
 
     // Build context for the prompt
     const ctx = {
-      gigTitle,
-      gigDescription,
-      skills: gigSkills,
+      jobTitle: title,
+      jobDescription: description,
+      skills: skills.join(", "),
       clientTone: "unknown (analyze from description)",
       painPoints: "infer from description",
-      userSkills: userSkills || "experienced professional",
-      budget: "not specified",
+      userSkills: userSkills || "experienced B2B partner",
+      budget: budget,
     };
 
     // Select prompt template based on style

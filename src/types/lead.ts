@@ -11,6 +11,11 @@ export interface Lead {
   source: LeadSource;
   createdAt: string;
   updatedAt: string;
+  outreachScore?: number;
+  recentActivity?: string;
+  platform?: string;
+  company?: string;
+  companyName?: string;
 }
 
 export interface LeadScore {

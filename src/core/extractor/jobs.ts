@@ -32,7 +32,7 @@ export function extractJobListings(input: ExtractJobListingsInput): JobListingsR
   if (input.ats_platform === 'Lever' || input.html.includes('class="posting"')) {
     method = 'ats_pattern';
     // Dummy parsing logic to simulate Lever extraction
-    const match = input.html.match(/<div class="posting">.*?<a[^>]+href="(.*?)"[^>]*>(.*?)<\/a>.*?<span class="sort-by-team">(.*?)<\/span>.*?<span class="sort-by-location">(.*?)<\/span>.*?<\/div>/si);
+    const match = input.html.match(/<div class="posting">[\s\S]*?<a[^>]+href="(.*?)"[^>]*>(.*?)<\/a>[\s\S]*?<span class="sort-by-team">(.*?)<\/span>[\s\S]*?<span class="sort-by-location">(.*?)<\/span>[\s\S]*?<\/div>/i);
     if (match) {
       listings.push({
         listing_url: match[1],

@@ -48,6 +48,10 @@ Intent: ${input.source_intent || 'N/A'}`;
       },
     });
 
+    if (!output) {
+      throw new Error('No output from AI classifier');
+    }
+
     return {
       category: output.category as any,
       confidence: output.confidence,

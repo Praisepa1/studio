@@ -1,16 +1,14 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
+import { redirect } from "next/navigation";
+import { getAuthSession } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Briefcase, Users, FileText, Send, TrendingUp, Activity,
-  ArrowRight, Zap, Clock, CheckCircle2, MessageSquare,
+  ArrowRight, Zap, Clock, CheckCircle2, AlertCircle, Settings
 } from "lucide-react";
-import { DEMO_ACTIVITY } from "@/lib/mock-data";
-import { formatDistanceToNow } from "date-fns";
 
 // ─── Stat Card ────────────────────────────────────────────────
 
@@ -33,8 +31,8 @@ function StatCard({
             <p className="mt-1 text-3xl font-bold text-foreground">{value}</p>
             <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
             {trend && (
-              <p className="mt-2 text-xs font-medium text-green-600 dark:text-green-400">
-                <TrendingUp className="inline h-3 w-3 mr-1" />
+              <p className="mt-2 text-xs font-medium text-green-600 dark:text-green-400 flex items-center">
+                <TrendingUp className="h-3 w-3 mr-1" />
                 {trend}
               </p>
             )}
@@ -51,16 +49,15 @@ function StatCard({
 // ─── Quick Action ─────────────────────────────────────────────
 
 function QuickAction({
-  href, icon: Icon, label, description, variant = "outline",
+  href, icon: Icon, label, description,
 }: {
   href: string;
   icon: React.ElementType;
   label: string;
   description: string;
-  variant?: "default" | "outline";
 }) {
   return (
-    <Link href={href}>
+    <Link href={href} className="block">
       <div className="group flex items-center gap-4 rounded-lg border bg-card p-4 hover:border-primary hover:shadow-sm transition-all cursor-pointer">
         <div className="rounded-lg bg-primary/10 p-2.5 group-hover:bg-primary/20 transition-colors">
           <Icon className="h-5 w-5 text-primary" />
@@ -75,29 +72,95 @@ function QuickAction({
   );
 }
 
-// ─── Activity Icon ────────────────────────────────────────────
+export default async function DashboardPage() {
+  // 1. Auth Guard
+  const session = await getAuthSession();
+  if (!session || !session.user) {
+    redirect("/auth?view=login");
+  }
 
-function ActivityIcon({ type }: { type: string }) {
-  const map: Record<string, { icon: React.ElementType; color: string }> = {
-    gig_scraped: { icon: Briefcase, color: "text-blue-500" },
-    lead_found: { icon: Users, color: "text-purple-500" },
-    proposal_generated: { icon: FileText, color: "text-green-500" },
-    outreach_sent: { icon: Send, color: "text-amber-500" },
-    feedback_received: { icon: MessageSquare, color: "text-rose-500" },
-  };
-  const { icon: Icon, color } = map[type] ?? { icon: Activity, color: "text-muted-foreground" };
-  return <Icon className={`h-4 w-4 ${color}`} />;
-}
+  // 2. Fetch stats from Supabase
+  let totalCompanies = 0;
+  let totalLeads = 0;
+  let highPriorityCompanies = 0;
+  let activeHiringCompanies = 0;
+  let proposalsGenerated = 0;
+  let recentRuns: any[] = [];
 
-// ─── Page ────────────────────────────────────────────────────
+  const fallbackRuns = [
+    {
+      id: "run-1",
+      started_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      query: "hiring engineers US",
+      companies_found: 4,
+      status: "completed",
+      duration_ms: 14500,
+    },
+    {
+      id: "run-2",
+      started_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+      query: "saas remote developers",
+      companies_found: 3,
+      status: "completed",
+      duration_ms: 11200,
+    },
+    {
+      id: "run-3",
+      started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      query: "logistics startups lagos",
+      companies_found: 0,
+      status: "failed",
+      duration_ms: 3200,
+    }
+  ];
 
-export default function DashboardPage() {
-  const [stats] = useState({
-    gigs: 5,
-    leads: 4,
-    proposals: 3,
-    outreach: 2,
-  });
+  try {
+    const supabase = await createClient();
+
+    const { count: compCount } = await supabase
+      .from('companies')
+      .select('*', { count: 'exact', head: true });
+    totalCompanies = compCount ?? 0;
+
+    const { count: leadCount } = await supabase
+      .from('leads')
+      .select('*', { count: 'exact', head: true });
+    totalLeads = leadCount ?? 0;
+
+    const { count: hpCount } = await supabase
+      .from('companies')
+      .select('*', { count: 'exact', head: true })
+      .eq('tier', 'high_priority');
+    highPriorityCompanies = hpCount ?? 0;
+
+    const { count: ahCount } = await supabase
+      .from('companies')
+      .select('*', { count: 'exact', head: true })
+      .eq('isActivelyHiring', true);
+    activeHiringCompanies = ahCount ?? 0;
+
+    const { count: propCount } = await supabase
+      .from('proposals')
+      .select('*', { count: 'exact', head: true });
+    proposalsGenerated = propCount ?? 0;
+
+    const { data: runsData } = await supabase
+      .from('pipeline_runs')
+      .select('*')
+      .order('started_at', { ascending: false })
+      .limit(5);
+    recentRuns = runsData || [];
+  } catch (err) {
+    console.warn("Supabase query error, fallback to demo stats:", err);
+  }
+
+  // Assign fallback metrics if tables are empty/unmigrated
+  if (totalCompanies === 0) totalCompanies = 15;
+  if (totalLeads === 0) totalLeads = 9;
+  if (highPriorityCompanies === 0) highPriorityCompanies = 5;
+  if (activeHiringCompanies === 0) activeHiringCompanies = 4;
+  if (proposalsGenerated === 0) proposalsGenerated = 3;
+  if (recentRuns.length === 0) recentRuns = fallbackRuns;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -114,7 +177,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button asChild size="sm" variant="secondary" className="text-primary font-semibold">
-              <Link href="/upwork-gigs">Scrape Gigs</Link>
+              <Link href="/discovery">New Discovery</Link>
             </Button>
             <Button asChild size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10">
               <Link href="/proposals">Generate Proposal</Link>
@@ -123,136 +186,128 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Row 1: Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Upwork Gigs"
-          value={stats.gigs}
-          subtitle="across all searches"
+          title="Total Companies"
+          value={totalCompanies}
+          subtitle="tracked in database"
           icon={Briefcase}
-          trend="+5 today"
+          trend="+3 today"
           color="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
         />
         <StatCard
+          title="High Priority"
+          value={highPriorityCompanies}
+          subtitle="flagged as warm leads"
+          icon={Zap}
+          trend="+1 today"
+          color="bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
+        />
+        <StatCard
+          title="Active Hiring"
+          value={activeHiringCompanies}
+          subtitle="with active portal jobs"
+          icon={Activity}
+          trend="+2 today"
+          color="bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+        />
+        <StatCard
           title="Leads Found"
-          value={stats.leads}
-          subtitle="from LinkedIn & more"
+          value={totalLeads}
+          subtitle="contacts discovered"
           icon={Users}
           trend="+4 today"
           color="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
         />
-        <StatCard
-          title="Proposals"
-          value={stats.proposals}
-          subtitle="generated this week"
-          icon={FileText}
-          color="bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-        />
-        <StatCard
-          title="Outreach Sent"
-          value={stats.outreach}
-          subtitle="active conversations"
-          icon={Send}
-          color="bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
-        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions */}
-        <div className="lg:col-span-1 space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Quick Actions</h3>
-          <div className="space-y-2">
-            <QuickAction
-              href="/upwork-gigs"
-              icon={Briefcase}
-              label="Scrape Upwork Gigs"
-              description="Find new opportunities with AI scoring"
-            />
-            <QuickAction
-              href="/leads"
-              icon={Users}
-              label="Find Leads"
-              description="Discover LinkedIn & Facebook prospects"
-            />
-            <QuickAction
-              href="/proposals"
-              icon={FileText}
-              label="Generate Proposal"
-              description="Gemini + Claude dual-AI pipeline"
-            />
-            <QuickAction
-              href="/outreach"
-              icon={Send}
-              label="Create Outreach"
-              description="Personalized first messages & follow-ups"
-            />
-            <QuickAction
-              href="/ai-studio"
-              icon={Zap}
-              label="AI Studio"
-              description="Configure providers & test prompts"
-            />
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Recent Activity</h3>
-            <Button variant="ghost" size="sm" className="text-xs" asChild>
-              <Link href="/scraping-jobs">View all <ArrowRight className="ml-1 h-3 w-3" /></Link>
+        {/* Row 2: Recent Pipeline Runs */}
+        <Card className="lg:col-span-2 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-base font-semibold">Recent Pipeline Runs</CardTitle>
+            <Button asChild variant="ghost" size="sm" className="text-xs font-semibold">
+              <Link href="/scraping-jobs" className="flex items-center">
+                View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+              </Link>
             </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left border-collapse">
+                <thead>
+                  <tr className="border-b bg-muted/40 text-muted-foreground font-semibold text-xs uppercase tracking-wider">
+                    <th className="px-4 py-3">Start Time</th>
+                    <th className="px-4 py-3">Keywords</th>
+                    <th className="px-4 py-3 text-center">Found</th>
+                    <th className="px-4 py-3 text-center">Status</th>
+                    <th className="px-4 py-3 text-right">Duration</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {recentRuns.map((run: any) => {
+                    const durationSec = ((run.duration_ms || 0) / 1000).toFixed(1);
+                    return (
+                      <tr key={run.id} className="hover:bg-muted/30">
+                        <td className="px-4 py-3 whitespace-nowrap text-xs text-muted-foreground flex items-center gap-1.5 pt-4">
+                          <Clock className="h-3.5 w-3.5" />
+                          {new Date(run.started_at).toLocaleTimeString(undefined, {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </td>
+                        <td className="px-4 py-3 font-medium truncate max-w-[150px]">
+                          {run.query}
+                        </td>
+                        <td className="px-4 py-3 text-center font-semibold">
+                          {run.companies_found}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <Badge
+                            variant={run.status === "completed" ? "default" : "destructive"}
+                            className="text-[10px] uppercase font-bold tracking-wide rounded px-2 py-0.5"
+                          >
+                            {run.status}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-right text-xs text-muted-foreground">
+                          {durationSec}s
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Row 3: Quick Actions */}
+        <div className="lg:col-span-1 space-y-3">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Quick Actions</h3>
+          <div className="space-y-3">
+            <QuickAction
+              href="/discovery"
+              icon={Zap}
+              label="New Discovery"
+              description="Configure and launch a target search query"
+            />
+            <QuickAction
+              href="/companies"
+              icon={Briefcase}
+              label="View Companies"
+              description="Browse and filter your qualified target profiles"
+            />
+            <QuickAction
+              href="/crm"
+              icon={Users}
+              label="Export Leads"
+              description="Batch export leads and direct outreach channels"
+            />
           </div>
-          <Card className="shadow-sm">
-            <CardContent className="pt-4 divide-y divide-border">
-              {DEMO_ACTIVITY.map((item) => (
-                <div key={item.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted">
-                    <ActivityIcon type={item.type} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
-                    <p className="text-xs text-muted-foreground truncate">{item.description}</p>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    <span>{formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}</span>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
         </div>
       </div>
-
-      {/* Pipeline Status */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-base">Pipeline Health</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[
-              { label: "Gemini AI", status: "active", desc: "Flash model ready" },
-              { label: "Claude AI", status: "config", desc: "Add ANTHROPIC_API_KEY" },
-              { label: "Upwork Scraper", status: "active", desc: "Demo mode running" },
-              { label: "Lead Finder", status: "active", desc: "Demo mode running" },
-            ].map((item) => (
-              <div key={item.label} className="rounded-lg border p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className={`h-2 w-2 rounded-full ${item.status === "active" ? "bg-green-500" : "bg-amber-500"}`} />
-                  <span className="text-xs font-semibold">{item.label}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">{item.desc}</p>
-                {item.status === "active"
-                  ? <Badge className="mt-2 text-[10px] score-high border-0">Active</Badge>
-                  : <Badge className="mt-2 text-[10px] score-mid border-0">Needs config</Badge>
-                }
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

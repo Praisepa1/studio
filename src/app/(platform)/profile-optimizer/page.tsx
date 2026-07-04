@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Sparkles, ListChecks } from "lucide-react";
 
 const profileOptimizerFormSchema = z.object({
-  platform: z.enum(["Upwork", "LinkedIn"], { required_error: "Please select a platform." }),
+  platform: z.enum(["Other", "LinkedIn"], { required_error: "Please select a platform." }),
   profileText: z.string().min(100, "Profile text must be at least 100 characters."),
   jobDescription: z.string().min(50, "Job description must be at least 50 characters."),
 });
@@ -39,7 +39,10 @@ export default function ProfileOptimizerPage() {
     setIsLoading(true);
     setOptimizationResult(null);
     try {
-      const result = await profileOptimizer(data);
+      const result = await profileOptimizer({
+        ...data,
+        platform: data.platform === "Other" ? ("Upwork" as any) : data.platform
+      });
       setOptimizationResult(result);
       toast({
         title: "Profile Optimization Complete",
@@ -64,7 +67,7 @@ export default function ProfileOptimizerPage() {
         <CardHeader>
           <CardTitle className="text-2xl">AI Profile Optimizer</CardTitle>
           <CardDescription>
-            Optimize your Upwork or LinkedIn profile based on a target job description.
+            Optimize your LinkedIn or other portfolio profile based on a target job description.
           </CardDescription>
         </CardHeader>
         <Form {...form}>
@@ -83,7 +86,7 @@ export default function ProfileOptimizerPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Upwork">Upwork</SelectItem>
+                        <SelectItem value="Other">Other Portfolio</SelectItem>
                         <SelectItem value="LinkedIn">LinkedIn</SelectItem>
                       </SelectContent>
                     </Select>

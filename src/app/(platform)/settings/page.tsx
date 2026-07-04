@@ -17,7 +17,7 @@ const profileFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }).max(50, { message: "Name must not exceed 50 characters." }),
   email: z.string().email({ message: "Invalid email address." }),
   linkedinProfile: z.string().url({ message: "Invalid LinkedIn URL (must include http/https)." }).optional().or(z.literal('')),
-  upworkProfile: z.string().url({ message: "Invalid Upwork URL (must include http/https)." }).optional().or(z.literal('')),
+  portfolioProfile: z.string().url({ message: "Invalid Portfolio URL (must include http/https)." }).optional().or(z.literal('')),
   defaultResumeInfo: z.string().max(5000, { message: "Default resume info is too long (max 5000 chars)." }).optional(),
 });
 
@@ -28,7 +28,7 @@ const defaultValues: Partial<ProfileFormValues> = {
   name: "Alex Johnson",
   email: "alex.johnson@example.com",
   linkedinProfile: "https://www.linkedin.com/in/alexjohnson",
-  upworkProfile: "",
+  portfolioProfile: "",
   defaultResumeInfo: "Experienced software developer with 5+ years in web technologies including React, Node.js, and Python. Proven ability to deliver high-quality software solutions in agile environments. Strong problem-solving skills and a passion for learning new technologies.",
 };
 
@@ -140,12 +140,12 @@ export default function SettingsPage() {
               />
               <FormField
                 control={form.control}
-                name="upworkProfile"
+                name="portfolioProfile"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Upwork Profile URL</FormLabel>
+                    <FormLabel>Portfolio Website URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://www.upwork.com/freelancers/yourprofile" {...field} className="shadow-sm focus:ring-primary focus:border-primary"/>
+                      <Input placeholder="https://myportfolio.com" {...field} className="shadow-sm focus:ring-primary focus:border-primary"/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

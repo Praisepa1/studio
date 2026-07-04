@@ -10,9 +10,9 @@ import {
 const features = [
   {
     icon: Briefcase,
-    title: "Upwork Gig Scraper",
-    description: "Automatically find and score Upwork opportunities. AI analysis extracts pain points, client tone, and conversion potential for every gig.",
-    href: "/upwork-gigs",
+    title: "B2B Company Discovery",
+    description: "Automatically find and score target companies. AI analysis extracts pain points, tech stack, and conversion potential for every business.",
+    href: "/discovery",
   },
   {
     icon: Users,
@@ -23,7 +23,7 @@ const features = [
   {
     icon: FileText,
     title: "Proposal Generator",
-    description: "Generate winning Upwork proposals in 4 styles. Use Gemini, Claude, or the dual-AI pipeline where Gemini drafts and Claude refines.",
+    description: "Generate winning project proposals in 4 styles. Use Gemini, Claude, or the dual-AI pipeline where Gemini drafts and Claude refines.",
     href: "/proposals",
   },
   {
@@ -49,8 +49,8 @@ const features = [
 const steps = [
   {
     n: "01",
-    title: "Scrape Opportunities",
-    description: "Run the Upwork scraper or lead finder. AI scores, classifies, and enriches every result instantly.",
+    title: "Discover Opportunities",
+    description: "Run the B2B discovery or lead finder. AI scores, classifies, and enriches every result instantly.",
   },
   {
     n: "02",
@@ -102,7 +102,7 @@ export default function LandingPage() {
             and outreach
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            JobJet scrapes Upwork gigs and LinkedIn leads, analyzes client psychology, and generates
+            JobJet discovers target companies and qualified leads, analyzes client psychology, and generates
             personalized proposals that convert — using both Gemini and Claude intelligently.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3">

@@ -1,56 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateWithProvider } from "@/ai/providers";
 import { outreachPrompts } from "@/ai/prompts";
+import type { Lead } from "@/types/lead";
 import type { OutreachType, AIProvider } from "@/types";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
-      leadName = "",
-      leadCompany = "",
-      leadRole = "",
-      leadBio = "",
-      offerValue = "",
+      lead,
       type = "first_message",
       channel = "linkedin",
       tone = "direct",
       provider = "gemini",
+      offerValue = "",
     } = body as {
-      leadName: string;
-      leadCompany: string;
-      leadRole: string;
-      leadBio: string;
-      offerValue: string;
+      lead: Lead;
       type: OutreachType;
-      channel: string;
-      tone: string;
+      channel?: string;
+      tone?: string;
       provider: AIProvider;
+      offerValue?: string;
     };
+
+    if (!lead || !lead.name) {
+      return NextResponse.json({ error: "Missing required lead object" }, { status: 400 });
+    }
 
     let prompt: string;
 
     if (type === "first_message") {
       prompt = outreachPrompts.first_message({
-        leadName,
-        company: leadCompany,
-        role: leadRole,
-        platform: channel,
+        leadName: lead.name,
+        company: lead.companyName || lead.company || "your company",
+        role: lead.title,
+        platform: lead.platform || channel,
         tone,
-        painPoints: leadBio ? `inferred from bio: "${leadBio.slice(0, 200)}"` : "not specified",
-        offerValue: offerValue || "provide relevant value",
+        painPoints: lead.recentActivity || "not specified",
+        offerValue: offerValue || "provide relevant B2B services",
+        specificSignal: lead.recentActivity ? `Recent activity: ${lead.recentActivity}` : undefined,
       });
     } else if (type === "follow_up") {
       prompt = outreachPrompts.follow_up({
-        leadName,
-        company: leadCompany,
+        leadName: lead.name,
+        company: lead.companyName || lead.company || "your company",
         tone,
         previousMessage: "Initial outreach was sent recently",
+        specificSignal: lead.recentActivity ? `Recent activity: ${lead.recentActivity}` : undefined,
       });
     } else {
       prompt = outreachPrompts.closing({
-        leadName,
-        company: leadCompany,
+        leadName: lead.name,
+        company: lead.companyName || lead.company || "your company",
         tone,
       });
     }
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
       model: result.model,
       provider,
       type,
-      channel,
+      channel: lead.platform || channel,
       tone,
       generatedAt: new Date().toISOString(),
     });

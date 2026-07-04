@@ -50,6 +50,14 @@ export function extractSocialLinks(input: ExtractSocialLinksInput): SocialLinksR
        if (parts.length === 1) { // github.com/{org}
          profiles.push({ platform: 'github', url: cleanUrl, confidence: 'high', evidence: 'Org-style Github match' });
        }
+    } else if (domain === 'instagram.com') {
+      profiles.push({ platform: 'instagram', url: cleanUrl, confidence: 'high', evidence: 'Instagram profile match' });
+    } else if (domain === 'facebook.com') {
+      profiles.push({ platform: 'facebook', url: cleanUrl, confidence: 'high', evidence: 'Facebook profile match' });
+    } else if (domain === 'youtube.com') {
+      profiles.push({ platform: 'youtube', url: cleanUrl, confidence: 'high', evidence: 'YouTube channel match' });
+    } else if (domain === 'tiktok.com') {
+      profiles.push({ platform: 'tiktok', url: cleanUrl, confidence: 'high', evidence: 'TikTok profile match' });
     }
   }
 

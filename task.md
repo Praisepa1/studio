@@ -18,6 +18,6 @@
   - [x] Create `src/core/extractor/__tests__/social.test.ts`
   - [x] Create `src/core/extractor/__tests__/jobs.test.ts`
   - [x] Create `src/core/extractor/__tests__/company.test.ts`
-- [ ] **Verification**
-  - [ ] Run `npm run test`
-  - [ ] Run `npm run typecheck`
+- [x] **Verification**
+  - [x] Run `npm run test`
+  - [x] Run `npm run typecheck`

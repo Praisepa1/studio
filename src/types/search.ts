@@ -4,6 +4,7 @@ export interface SearchQuery {
   term: string;
   category?: URLCategory;
   limit?: number;
+  targetType?: 'company' | 'job' | 'all' | string;
 }
 
 export interface SearchResult {

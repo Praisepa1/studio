@@ -7,6 +7,12 @@ export interface Company {
   description?: string;
   createdAt: string;
   updatedAt: string;
+  isActivelyHiring?: boolean;
+  techStack?: string[];
+  socialLinks?: string[];
+  contactEmail?: string;
+  contactPhone?: string;
+  location?: string;
 }
 
 export interface CompanyScore {
