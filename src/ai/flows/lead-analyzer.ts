@@ -1,16 +1,14 @@
-'use server';
-
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { enrichLead } from '@/enrichment/lead';
 import type { Lead, Company } from '@/types';
 
-export const LeadAnalyzerInputSchema = z.object({
+const LeadAnalyzerInputSchema = z.object({
   lead: z.any().describe('The Lead object'),
   company: z.any().describe('The Company object context'),
 });
 
-export const LeadAnalyzerOutputSchema = z.any().describe('The LeadAnalysis object');
+const LeadAnalyzerOutputSchema = z.any().describe('The LeadAnalysis object');
 
 function inferPersona(title: string, industry?: string, size?: string): string {
   const t = title.toLowerCase();
@@ -76,7 +74,7 @@ function inferPersona(title: string, industry?: string, size?: string): string {
   return 'unknown';
 }
 
-export const leadAnalyzerFlow = ai.defineFlow(
+const leadAnalyzerFlow = ai.defineFlow(
   {
     name: 'leadAnalyzerFlow',
     inputSchema: LeadAnalyzerInputSchema,

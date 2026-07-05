@@ -1,15 +1,13 @@
-'use server';
-
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { enrichCompany } from '@/enrichment/company';
 import { enrichTechnology } from '@/enrichment/technology';
 import type { Company } from '@/types';
 
-export const CompanyAnalyzerInputSchema = z.any().describe('The Company object to analyze');
-export const CompanyAnalyzerOutputSchema = z.any().describe('The merged CompanyAnalysis object');
+const CompanyAnalyzerInputSchema = z.any().describe('The Company object to analyze');
+const CompanyAnalyzerOutputSchema = z.any().describe('The merged CompanyAnalysis object');
 
-export const companyAnalyzerFlow = ai.defineFlow(
+const companyAnalyzerFlow = ai.defineFlow(
   {
     name: 'companyAnalyzerFlow',
     inputSchema: CompanyAnalyzerInputSchema,
