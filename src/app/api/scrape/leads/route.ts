@@ -5,6 +5,9 @@ import { generateWithProvider } from '@/ai/providers';
 import { createClient } from '@/lib/supabase/server';
 import { cleanAndParseJSON } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
+
 /**
  * POST handler for initiating B2B lead scraping/generation workflows.
  * 1. Checks user authorization session.
@@ -195,6 +198,7 @@ No markdown formatting, no explanations.`;
           name: lead.name,
           title: lead.title,
           company_id: companyId,
+          user_id: session.user.id,
           linkedin_url: lead.linkedin_url || lead.website || '',
           status: 'new',
           outreach_score: score,

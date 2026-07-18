@@ -6,6 +6,9 @@ import { scoreCompany } from '@/scoring/company';
 import type { TechStackResult } from '@/core/extractor/technology';
 import type { ContactsResult as ContactResult } from '@/core/extractor/contacts';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request: Request) {
   // 1. Auth Guard
   const session = await getAuthSession();

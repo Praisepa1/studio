@@ -34,6 +34,9 @@ import type { Proposal, ProposalStyle, AIProvider } from "@/types";
 import { formatDistanceToNow } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 
+export const dynamic = 'force-dynamic';
+
+
 function loadProposals(): Proposal[] {
   if (typeof window === "undefined") return [];
   try {

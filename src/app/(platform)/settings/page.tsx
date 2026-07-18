@@ -15,6 +15,9 @@ import { Save } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
+export const dynamic = 'force-dynamic';
+
+
 const profileFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }).max(50, { message: "Name must not exceed 50 characters." }),
   email: z.string().email({ message: "Invalid email address." }),

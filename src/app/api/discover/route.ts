@@ -5,6 +5,9 @@ import { createClient } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/ratelimit';
 import { pipelineQueue } from '@/lib/queue/pipeline-queue';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request: Request) {
   // 1. Auth Guard
   const session = await getAuthSession();

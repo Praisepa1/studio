@@ -3,6 +3,9 @@ import { getAuthSession } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { exportToCsv } from '@/crm/export';
 
+export const dynamic = 'force-dynamic';
+
+
 /**
  * GET handler for exporting database records (companies/leads) to CSV format.
  * Matches parameters expected by CrmClient:

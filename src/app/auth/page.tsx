@@ -30,6 +30,9 @@ import { LoadingButton } from "@/components/loading-button";
 import { LogIn, Mail, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
+export const dynamic = 'force-dynamic';
+
+
 const GoogleIcon = () => (
   <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.54-.88 2.48-1.76 3.34C16.96 19.12 14.96 20 12.48 20s-4.48-.88-6.16-2.48C4.24 15.92 3.44 14 3.44 12s.8-3.92 2.48-5.52C7.84 4.88 9.92 4 12.48 4c2.08 0 3.76.72 4.96 1.84l2.72-2.72C18.4 1.2 15.84 0 12.48 0S4.64 1.84 2.48 4.08 0 8.32 0 12s2.48 7.92 4.96 10.16C7.36 24.24 9.84 24 12.48 24s5.84-.8 7.84-2.64c2.24-2 3.28-4.4 3.28-7.36 0-.56-.08-1.12-.16-1.68z" fill="currentColor" /></svg>
 );

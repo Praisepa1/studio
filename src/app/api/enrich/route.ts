@@ -4,6 +4,9 @@ import { createClient } from '@/lib/supabase/server';
 import { analyzeCompany } from '@/ai/flows/company-analyzer';
 import { analyzeLead } from '@/ai/flows/lead-analyzer';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request: Request) {
   // 1. Auth Guard
   const session = await getAuthSession();

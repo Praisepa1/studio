@@ -2,6 +2,9 @@ import { getAuthSession } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { exportToCsv } from '@/crm/export';
 
+export const dynamic = 'force-dynamic';
+
+
 /**
  * GET handler specifically matching the Companies list page direct download link.
  * Exports all discovered companies to companies.csv format.

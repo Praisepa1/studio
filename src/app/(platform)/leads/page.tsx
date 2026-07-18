@@ -23,6 +23,9 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+
+
 function scoreColor(score?: number) {
   if (!score) return "score-mid";
   if (score >= 8) return "score-high";

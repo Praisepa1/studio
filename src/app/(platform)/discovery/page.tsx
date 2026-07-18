@@ -16,6 +16,9 @@ import { toast } from "@/hooks/use-toast";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect } from "react";
 
+export const dynamic = 'force-dynamic';
+
+
 export default function DiscoveryPage() {
   const [query, setQuery] = useState<SearchQuery | null>(null);
   const [isRunning, setIsRunning] = useState(false);

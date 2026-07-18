@@ -9,6 +9,9 @@ import { extractJobListings } from '@/core/extractor/jobs';
 import { randomUUID } from 'crypto';
 import type { Job, JobSource } from '@/types/job';
 
+export const dynamic = 'force-dynamic';
+
+
 // Helper for ATS platform detection
 function getAtsPlatform(url: string): string | null {
   const u = url.toLowerCase();

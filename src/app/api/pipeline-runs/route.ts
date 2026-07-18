@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET(request: Request) {
   // 1. Auth Guard
   const session = await getAuthSession();

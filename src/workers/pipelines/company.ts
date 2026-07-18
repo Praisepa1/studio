@@ -300,10 +300,10 @@ export async function runCompanyPipeline(runId: string, userId: string, config: 
       }
 
       const contactInserts = [];
-      for (const email of consolidatedContacts.emails) contactInserts.push({ company_id: companyId, type: 'email', value: email.address });
-      for (const phone of consolidatedContacts.phones) contactInserts.push({ company_id: companyId, type: 'phone', value: phone.number });
-      for (const addr of consolidatedContacts.addresses) contactInserts.push({ company_id: companyId, type: 'address', value: addr.text });
-      for (const named of consolidatedContacts.named_contacts) contactInserts.push({ company_id: companyId, type: 'named', value: named.name, title: named.title });
+      for (const email of consolidatedContacts.emails) contactInserts.push({ company_id: companyId, user_id: userId, type: 'email', value: email.address });
+      for (const phone of consolidatedContacts.phones) contactInserts.push({ company_id: companyId, user_id: userId, type: 'phone', value: phone.number });
+      for (const addr of consolidatedContacts.addresses) contactInserts.push({ company_id: companyId, user_id: userId, type: 'address', value: addr.text });
+      for (const named of consolidatedContacts.named_contacts) contactInserts.push({ company_id: companyId, user_id: userId, type: 'named', value: named.name, title: named.title });
       if (contactInserts.length > 0) {
         const { error: insertErr } = await supabase.from('contacts').insert(contactInserts);
         if (insertErr) console.error("Failed to insert contacts:", insertErr);
