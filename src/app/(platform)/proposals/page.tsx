@@ -11,6 +11,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   FileText,
   Copy,
   Edit3,
@@ -19,11 +26,13 @@ import {
   ThumbsUp,
   ThumbsDown,
   Clock,
+  X,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { Proposal, ProposalStyle, AIProvider } from "@/types";
 import { formatDistanceToNow } from "date-fns";
+import { createClient } from "@/lib/supabase/client";
 
 function loadProposals(): Proposal[] {
   if (typeof window === "undefined") return [];
@@ -53,17 +62,23 @@ const EditIcon = Edit3;
 function providerLabel(p: AIProvider): string {
   if (p === "gemini") return "Gemini 2.0 Flash";
   if (p === "claude") return "Claude 3.5 Sonnet";
+  if (p === "openrouter-gemini") return "Gemini (OpenRouter)";
+  if (p === "openrouter-claude") return "Claude (OpenRouter)";
+  if (p === "openrouter-pipeline") return "Dual-AI (OpenRouter)";
   return "Dual-AI Pipeline";
 }
 
 function providerClass(p: AIProvider): string {
   if (p === "gemini") return "provider-gemini";
   if (p === "claude") return "provider-claude";
+  if (p === "openrouter-gemini") return "provider-gemini bg-indigo-500/10 text-indigo-500 border-indigo-500/20";
+  if (p === "openrouter-claude") return "provider-claude bg-purple-500/10 text-purple-500 border-purple-500/20";
   return "provider-pipeline";
 }
 
 function ProposalsContent() {
   const { toast } = useToast();
+  const supabase = createClient();
   const searchParams = useSearchParams();
   const prefillJobTitle = searchParams.get("jobTitle") ?? "";
 
@@ -72,7 +87,9 @@ function ProposalsContent() {
   const [jobSkills, setJobSkills] = useState("");
   const [userSkills, setUserSkills] = useState("");
   const [style, setStyle] = useState<ProposalStyle>("premium");
-  const [provider, setProvider] = useState<AIProvider>("gemini-claude");
+  const [provider, setProvider] = useState<AIProvider>(
+    (process.env.NEXT_PUBLIC_DEFAULT_AI_PROVIDER as AIProvider) || "openrouter-free"
+  );
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Partial<Proposal> | null>(null);
   const [editing, setEditing] = useState(false);
@@ -80,9 +97,43 @@ function ProposalsContent() {
   const [savedProposals, setSavedProposals] = useState<Proposal[]>([]);
   const [activeTab, setActiveTab] = useState("generate");
 
+  // Lead Picker State
+  const [dbLeads, setDbLeads] = useState<any[]>([]);
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+
   useEffect(() => {
     setSavedProposals(loadProposals() || []);
+    // Fetch available leads for the picker
+    const fetchLeads = async () => {
+      const { data } = await supabase
+        .from("leads")
+        .select("*, companies(name)")
+        .in("status", ["new", "proposal_failed"])
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (data) setDbLeads(data);
+    };
+    fetchLeads();
   }, []);
+
+  const handleLeadSelect = (id: string) => {
+    setSelectedLeadId(id);
+    const lead = dbLeads.find((l) => l.id === id);
+    if (!lead) return;
+    
+    const companyName = lead.companies?.name || "Unknown Company";
+    setJobTitle(`${companyName} - ${lead.title} (${lead.name})`);
+    
+    if (lead.enrichment) {
+      const parts = [];
+      if (lead.enrichment.niche) parts.push(`Niche: ${lead.enrichment.niche}`);
+      if (lead.enrichment.bio) parts.push(`Bio: ${lead.enrichment.bio}`);
+      if (lead.enrichment.businessNeedIndicators && Array.isArray(lead.enrichment.businessNeedIndicators)) {
+        parts.push(`Needs: ${lead.enrichment.businessNeedIndicators.join(', ')}`);
+      }
+      setJobDescription(parts.join('\n\n'));
+    }
+  };
 
   const generate = useCallback(async () => {
     if (!jobTitle.trim()) {
@@ -115,7 +166,7 @@ function ProposalsContent() {
     }
   }, [jobTitle, jobDescription, jobSkills, userSkills, style, provider, toast]);
 
-  const saveProposal = () => {
+  const saveProposal = async () => {
     if (!result?.content) return;
     const proposal: Proposal = {
       id: `prop-${Date.now()}`,
@@ -132,7 +183,46 @@ function ProposalsContent() {
     const updated = [proposal, ...savedProposals];
     setSavedProposals(updated);
     saveProposals(updated);
-    toast({ title: "Proposal saved!" });
+    
+    // DB INSERT
+    try {
+      const dbJobId = proposal.jobId === "manual" ? null : proposal.jobId;
+      const { error } = await supabase.from('proposals').insert({
+        job_id: dbJobId,
+        job_title: proposal.jobTitle,
+        content: proposal.content,
+        style: proposal.style,
+        provider: proposal.provider,
+        model: proposal.model,
+        outcome: proposal.outcome || 'pending',
+        feedback: proposal.feedback,
+        edited_content: editing ? editContent : undefined,
+        gemini_draft: proposal.geminiDraft,
+        claude_refinement: proposal.claudeRefinement,
+        enrichment: selectedLeadId ? { original_job_id: proposal.jobId, lead_id: selectedLeadId } : { original_job_id: proposal.jobId }
+      });
+      if (error) {
+        console.error("Supabase insert error:", error);
+        toast({ title: "Saved locally (DB sync failed)", variant: "destructive" });
+      } else {
+        toast({ title: "Proposal saved!" });
+        if (selectedLeadId) {
+          const { error: statusError } = await supabase
+            .from('leads')
+            .update({ status: 'proposal_generated' })
+            .eq('id', selectedLeadId);
+          if (statusError) {
+            console.error("Failed to update lead status:", statusError);
+          } else {
+            setDbLeads((prev) => prev.filter((l) => l.id !== selectedLeadId));
+            setSelectedLeadId(null);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Supabase insert exception:", e);
+      toast({ title: "Saved locally (DB sync failed)", variant: "destructive" });
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -181,6 +271,39 @@ function ProposalsContent() {
                   <CardTitle className="text-sm font-semibold">Job / Project Details</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  {/* Lead Picker */}
+                  <div className="flex flex-col gap-1.5 mb-2">
+                    <Label className="text-xs">Select Lead from CRM (Optional)</Label>
+                    <div className="flex gap-2 items-center">
+                      <Select value={selectedLeadId || ""} onValueChange={handleLeadSelect}>
+                        <SelectTrigger className="w-full text-xs h-9">
+                          <SelectValue placeholder="Select a lead to autofill..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {dbLeads.map(l => (
+                            <SelectItem key={l.id} value={l.id} className="text-xs">
+                              {l.name} - {l.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {selectedLeadId && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
+                          onClick={() => {
+                            setSelectedLeadId(null);
+                            setJobTitle("");
+                            setJobDescription("");
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
                   <div>
                     <Label className="text-xs">Project Title *</Label>
                     <Input
@@ -250,6 +373,10 @@ function ProposalsContent() {
                         { id: "gemini", label: "Gemini 2.0 Flash (Fast)" },
                         { id: "claude", label: "Claude 3.5 Sonnet (Refined)" },
                         { id: "gemini-claude", label: "Dual-AI Pipeline (Premium)" },
+                        { id: "openrouter-free", label: "OpenRouter Free (GPT-OSS-20b)" },
+                        { id: "openrouter-gemini", label: "Gemini via OpenRouter (Fast)" },
+                        { id: "openrouter-claude", label: "Claude via OpenRouter (Refined)" },
+                        { id: "openrouter-pipeline", label: "Dual-AI via OpenRouter (Premium)" },
                       ].map((p) => (
                         <button
                           key={p.id}

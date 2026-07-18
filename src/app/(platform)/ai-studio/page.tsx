@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -104,15 +104,29 @@ interface GenerationLog {
   timestamp: string;
 }
 
+import { DEFAULT_AI_PROVIDER } from "@/ai/providers/index";
+
 export default function AIStudioPage() {
   const { toast } = useToast();
-  const [selectedProvider, setSelectedProvider] = useState<AIProvider>("gemini");
+  const [selectedProvider, setSelectedProvider] = useState<AIProvider>(DEFAULT_AI_PROVIDER as AIProvider);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [customPrompt, setCustomPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [output, setOutput] = useState("");
   const [logs, setLogs] = useState<GenerationLog[]>([]);
   const [showLogs, setShowLogs] = useState(false);
+  const [statuses, setStatuses] = useState<{ gemini: boolean; claude: boolean; openrouter: boolean }>({
+    gemini: false,
+    claude: false,
+    openrouter: false,
+  });
+
+  useEffect(() => {
+    fetch("/api/providers/status")
+      .then((res) => res.json())
+      .then((data) => setStatuses(data))
+      .catch((err) => console.error("Failed to load provider statuses:", err));
+  }, []);
 
   const activeTemplate = PROMPT_TEMPLATES.find((t) => t.id === selectedTemplate);
 
@@ -171,20 +185,27 @@ export default function AIStudioPage() {
       {/* Provider Status */}
       <div>
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Provider Status</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <ProviderStatusCard
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+           <ProviderStatusCard
             name="Gemini (Google AI)"
             model="gemini-2.0-flash"
-            available={true}
+            available={statuses.gemini}
             description="Fast generation, broad knowledge. Used for planning, first-pass drafts, and classification."
             envKey="GOOGLE_GENAI_API_KEY"
           />
           <ProviderStatusCard
             name="Claude (Anthropic)"
             model="claude-opus-4-6"
-            available={!!process.env.ANTHROPIC_API_KEY}
+            available={statuses.claude}
             description="Deeper writing quality, persuasion, structured reasoning. Used for proposal refinement and outreach personalization."
             envKey="ANTHROPIC_API_KEY"
+          />
+          <ProviderStatusCard
+            name="OpenRouter API"
+            model="gemini-2.5-flash / claude-3.5-sonnet"
+            available={statuses.openrouter}
+            description="Access Gemini and Claude through a single unified API without direct provider keys."
+            envKey="OPENROUTER_API_KEY"
           />
         </div>
       </div>
@@ -207,6 +228,9 @@ export default function AIStudioPage() {
                   <SelectItem value="gemini">Gemini</SelectItem>
                   <SelectItem value="claude">Claude</SelectItem>
                   <SelectItem value="gemini-claude">Gemini → Claude Pipeline</SelectItem>
+                  <SelectItem value="openrouter-gemini">Gemini (via OpenRouter)</SelectItem>
+                  <SelectItem value="openrouter-claude">Claude (via OpenRouter)</SelectItem>
+                  <SelectItem value="openrouter-pipeline">Gemini → Claude Pipeline (via OpenRouter)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

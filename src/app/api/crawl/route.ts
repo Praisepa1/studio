@@ -1,3 +1,4 @@
+export const maxDuration = 300;
 import { NextResponse } from 'next/server';
 import { getAuthSession } from '@/lib/auth';
 import { classifyURL } from '@/core/classifier/ai-classifier';

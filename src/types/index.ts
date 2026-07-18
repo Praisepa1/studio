@@ -5,7 +5,7 @@ export * from './search';
 export * from './discovery';
 
 // Preserve other necessary types from before (without Gig)
-export type AIProvider = 'gemini' | 'claude' | 'gemini-claude';
+export type AIProvider = 'gemini' | 'claude' | 'gemini-claude' | 'openrouter-gemini' | 'openrouter-claude' | 'openrouter-pipeline' | 'openrouter-free';
 
 // ─── Proposal Types ──────────────────────────────────────────
 export type ProposalStyle = 'concise' | 'premium' | 'technical' | 'friendly';

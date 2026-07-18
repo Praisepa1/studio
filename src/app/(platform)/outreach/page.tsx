@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { OutreachMessage, OutreachType, OutreachChannel, OutreachTone, AIProvider } from "@/types";
+import { DEFAULT_AI_PROVIDER } from "@/ai/providers";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
@@ -31,14 +32,21 @@ function saveMessages(m: OutreachMessage[]) {
   if (typeof window !== "undefined") localStorage.setItem(STORAGE_KEY, JSON.stringify(m));
 }
 
-function providerLabel(p: AIProvider) {
+function providerLabel(p: string) {
   if (p === "gemini") return "Gemini";
   if (p === "claude") return "Claude";
+  if (p === "openrouter-gemini") return "Gemini (OpenRouter)";
+  if (p === "openrouter-claude") return "Claude (OpenRouter)";
+  if (p === "openrouter-pipeline") return "Gemini → Claude (OpenRouter)";
+  if (p === "openrouter-free") return "OpenRouter Free";
   return "Gemini → Claude";
 }
-function providerClass(p: AIProvider) {
+function providerClass(p: string) {
   if (p === "gemini") return "provider-gemini";
   if (p === "claude") return "provider-claude";
+  if (p === "openrouter-gemini") return "provider-gemini bg-indigo-500/10 text-indigo-500 border-indigo-500/20";
+  if (p === "openrouter-claude") return "provider-claude bg-purple-500/10 text-purple-500 border-purple-500/20";
+  if (p === "openrouter-free") return "provider-free bg-green-500/10 text-green-500 border-green-500/20";
   return "provider-pipeline";
 }
 
@@ -55,7 +63,7 @@ function OutreachContent() {
   const [type, setType] = useState<OutreachType>("first_message");
   const [channel, setChannel] = useState<OutreachChannel>("linkedin");
   const [tone, setTone] = useState<OutreachTone>("direct");
-  const [provider, setProvider] = useState<AIProvider>("gemini-claude");
+  const [provider, setProvider] = useState<AIProvider>(DEFAULT_AI_PROVIDER as AIProvider);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Partial<OutreachMessage> | null>(null);
   const [editing, setEditing] = useState(false);
@@ -76,7 +84,13 @@ function OutreachContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          leadName, leadCompany, leadRole, leadBio, offerValue,
+          lead: {
+            name: leadName,
+            companyName: leadCompany,
+            title: leadRole,
+            recentActivity: leadBio,
+          },
+          offerValue,
           type, channel, tone, provider,
         }),
       });
@@ -246,6 +260,10 @@ function OutreachContent() {
                         <SelectItem value="gemini">Gemini (Fast)</SelectItem>
                         <SelectItem value="claude">Claude (Quality)</SelectItem>
                         <SelectItem value="gemini-claude">Gemini → Claude (Best)</SelectItem>
+                        <SelectItem value="openrouter-gemini">Gemini (OpenRouter)</SelectItem>
+                        <SelectItem value="openrouter-claude">Claude (OpenRouter)</SelectItem>
+                        <SelectItem value="openrouter-pipeline">Gemini → Claude (OpenRouter)</SelectItem>
+                        <SelectItem value="openrouter-free">OpenRouter Free (GPT-OSS-20b)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

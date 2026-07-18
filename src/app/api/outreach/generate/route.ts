@@ -1,11 +1,18 @@
+export const maxDuration = 300;
 import { NextRequest, NextResponse } from "next/server";
 import { generateWithProvider } from "@/ai/providers";
 import { outreachPrompts } from "@/ai/prompts";
 import type { Lead } from "@/types/lead";
 import type { OutreachType, AIProvider } from "@/types";
+import { getAuthSession } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getAuthSession();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const {
       lead,

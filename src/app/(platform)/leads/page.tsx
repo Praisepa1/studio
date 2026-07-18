@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,8 @@ import {
   Building2, MapPin, Globe, Loader2, Send, Star,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type {  Lead  } from '@/types';
+import type { Lead } from '@/types';
+import { createClient } from "@/lib/supabase/client";
 
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -205,6 +206,12 @@ function LeadDetailDialog({ lead, open, onClose }: {
   );
 }
 
+/**
+ * LeadsPage component - Client-side page that renders B2B outreach leads.
+ * - Triggers secure queries to retrieve existing lead records from the database on load.
+ * - Allows searching and scraping new B2B leads using real-time search engine queries.
+ * - Displays lead metrics, details, pain points, and links to target outreach personalization workflows.
+ */
 export default function LeadsPage() {
   const { toast } = useToast();
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -213,6 +220,57 @@ export default function LeadsPage() {
   const [source, setSource] = useState("linkedin");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const loadLeads = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("leads")
+          .select(`
+            *,
+            companies (
+              name,
+              domain
+            )
+          `)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        
+        const mapped = (data || []).map((l: any) => ({
+          id: l.id,
+          name: l.name,
+          role: l.title,
+          company: l.companies?.name || 'Unknown Company',
+          location: l.enrichment?.location || 'Unknown',
+          website: l.companies?.domain || '',
+          socialLinks: [{ platform: l.source, url: l.linkedin_url }],
+          bio: l.enrichment?.summary || l.recent_activity || '',
+          businessNeedIndicators: l.enrichment?.likelyPainPoints || [],
+          source: l.source,
+          scrapedAt: l.created_at,
+          status: l.status,
+          summary: l.enrichment?.summary || '',
+          outreachAngle: l.enrichment?.outreachAngle || '',
+          likelyPainPoints: l.enrichment?.likelyPainPoints || [],
+          suggestedOfferFraming: l.enrichment?.suggestedOfferFraming || '',
+          recommendedTone: l.enrichment?.recommendedTone || 'professional',
+          communicationStyle: l.enrichment?.communicationStyle || 'executive',
+          confidenceNotes: l.enrichment?.confidenceNotes || '',
+          qualityScore: l.enrichment?.qualityScore || 5,
+          businessNeedSummary: l.enrichment?.businessNeedSummary || '',
+        }));
+        setLeads(mapped);
+      } catch (err) {
+        console.error("Failed to load leads from Supabase:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadLeads();
+  }, []);
 
   const findLeads = useCallback(async () => {
     setLoading(true);

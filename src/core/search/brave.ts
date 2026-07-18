@@ -31,6 +31,7 @@ export class BraveSearchProvider implements SearchProvider {
       }
 
       const data = await response.json();
+      console.log('Brave API response:', data);
       const results: SearchResult[] = (data.web?.results || []).map((item: any) => ({
         title: item.title,
         url: item.url,

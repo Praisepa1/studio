@@ -1,6 +1,7 @@
 import { researchPrompts } from '../ai/prompts';
 import { generateWithProvider } from '../ai/providers';
 import type { Company, AIProvider } from '../types';
+import { cleanAndParseJSON } from '../lib/utils';
 
 export interface CompanyEnrichment {
   one_liner: string;
@@ -36,8 +37,8 @@ export async function enrichCompany(
   });
 
   try {
-    let result = await generateWithProvider(provider, prompt, { maxTokens: 1024 });
-    let parsed = JSON.parse(result.content);
+    let result = await generateWithProvider(provider, prompt, { maxTokens: 2048 });
+    let parsed = cleanAndParseJSON(result.content);
 
     // Vague check: if it mentions generic phrases like "improved digital presence"
     const isVague = (text: string) => {
@@ -63,8 +64,8 @@ export async function enrichCompany(
         departmentsHiring: deptHiring,
       });
 
-      result = await generateWithProvider(provider, constrainedPrompt, { maxTokens: 1024 });
-      parsed = JSON.parse(result.content);
+      result = await generateWithProvider(provider, constrainedPrompt, { maxTokens: 2048 });
+      parsed = cleanAndParseJSON(result.content);
     }
 
     return {

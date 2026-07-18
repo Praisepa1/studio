@@ -84,9 +84,9 @@ export async function crawlSite(
 
   const target_pages = options.target_pages || ['about', 'contact', 'careers', 'team'];
   let max_pages = options.max_pages !== undefined ? options.max_pages : 5;
-  // Hard cap at 10
+  // Hard cap at 100
   if (max_pages > 10) {
-    max_pages = 10;
+    max_pages = 100;
   }
 
   const timeout_ms = options.timeout_ms;
@@ -122,7 +122,7 @@ export async function crawlSite(
   try {
     // 1. Crawl the homepage first
     const homepageResult = await crawlPage(start_url, context, { timeoutMs: timeout_ms, respectRobots });
-    
+
     if (!homepageResult.success) {
       pagesSkipped++;
       skipReasons.push(homepageResult.reason);
@@ -168,7 +168,7 @@ export async function crawlSite(
 
     for (const link of discoveredLinks) {
       const linkApex = getApexDomain(link);
-      
+
       // Filter: same apex domain, not already visited/queued, matches at least one target pattern
       if (linkApex === startApexDomain && !visitedOrQueued.has(link)) {
         // Also check if already cached
@@ -199,17 +199,17 @@ export async function crawlSite(
     // 3. BFS crawl queue
     while (queue.length > 0 && pagesCrawled < max_pages && foundTargetTypes.size < target_pages.length) {
       const nextUrl = queue.shift()!;
-      
+
       // Respect rate limit: min 1000ms delay between page loads on the same domain
       await delay(1000);
 
       const pageResult = await crawlPage(nextUrl, context, { timeoutMs: timeout_ms, respectRobots });
-      
+
       if (pageResult.success) {
         pages.push(pageResult);
         cacheSet(nextUrl, pageResult);
         pagesCrawled++;
-        
+
         if (pageResult.page_type && target_pages.includes(pageResult.page_type)) {
           foundTargetTypes.add(pageResult.page_type);
         }

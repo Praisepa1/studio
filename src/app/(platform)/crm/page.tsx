@@ -3,6 +3,9 @@ import { getAuthSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import CrmClient from "./crm-client";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function CrmPage() {
   // 1. Auth Guard
   const session = await getAuthSession();
@@ -17,71 +20,46 @@ export default async function CrmPage() {
   try {
     const supabase = await createClient();
 
-    const { data: compData } = await supabase
+    const { data: compData, error: compError } = await supabase
       .from("companies")
       .select("*")
       .order("score", { ascending: false });
-    companies = compData || [];
+      
+    if (compError) throw compError;
+    
+    companies = (compData || []).map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      score: c.score,
+      tier: c.tier,
+      isActivelyHiring: c.is_actively_hiring,
+      hiringStatus: c.hiring_status,
+      updatedAt: c.updated_at,
+      enrichment: c.enrichment,
+    }));
 
-    const { data: leadData } = await supabase
+    const { data: leadData, error: leadError } = await supabase
       .from("leads")
-      .select("*")
-      .order("outreachScore", { ascending: false });
-    leads = leadData || [];
+      .select("*, companies(name)")
+      .order("outreach_score", { ascending: false });
+      
+    if (leadError) throw leadError;
+    
+    leads = (leadData || []).map((l: any) => ({
+      id: l.id,
+      name: l.name,
+      companyName: l.companies?.name || 'Unknown Company',
+      title: l.title,
+      outreachScore: l.outreach_score,
+      status: l.status,
+      email: l.email,
+      updatedAt: l.updated_at,
+    }));
   } catch (err) {
     console.error("Failed to fetch CRM records:", err);
   }
 
-  // Fallback demo CRM records if empty
-  if (companies.length === 0) {
-    companies = [
-      {
-        id: "comp-1",
-        name: "Acme Corp",
-        score: 85,
-        tier: "high_priority",
-        isActivelyHiring: true,
-        updatedAt: new Date().toISOString(),
-        enrichment: {
-          pitch_angle: "Integrate our unified API to cut carrier overhead."
-        }
-      },
-      {
-        id: "comp-2",
-        name: "FinFlow SaaS",
-        score: 72,
-        tier: "warm",
-        isActivelyHiring: false,
-        hiringStatus: "passive",
-        updatedAt: new Date().toISOString(),
-      }
-    ];
-  }
 
-  if (leads.length === 0) {
-    leads = [
-      {
-        id: "lead-1",
-        name: "Sarah Chen",
-        companyName: "Acme Corp",
-        title: "VP of Engineering",
-        outreachScore: 88,
-        status: "new",
-        email: "sarah@acme.com",
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: "lead-2",
-        name: "Marcus Williams",
-        companyName: "FinFlow SaaS",
-        title: "Tech Lead",
-        outreachScore: 65,
-        status: "contacted",
-        email: "marcus@finflowsaas.io",
-        updatedAt: new Date().toISOString(),
-      }
-    ];
-  }
 
   return <CrmClient initialCompanies={companies} initialLeads={leads} />;
 }

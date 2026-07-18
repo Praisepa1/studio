@@ -8,19 +8,19 @@ export function applyHeuristics(input: ClassificationInput): ClassificationResul
 
   // 1. Domain-based rules
   if (hostname.endsWith('.gov') || hostname.includes('.gov.') || hostname.endsWith('.mil')) {
-    return { category: 'government', confidence: 'high', reasoning: 'Matches government/military domain pattern', recommended_action: 'skip' };
+    return { category: 'government', confidence: 'high', reasoning: 'Matches government/military domain pattern', recommended_action: 'crawl' };
   }
   if (hostname.endsWith('.edu') || hostname.includes('.ac.')) {
     return { category: 'education', confidence: 'high', reasoning: 'Matches educational domain pattern', recommended_action: 'crawl_with_caution' };
   }
   if (hostname === 'linkedin.com' || hostname === 'www.linkedin.com') {
-    if (path.startsWith('/in/')) return { category: 'social_profile', confidence: 'high', reasoning: 'LinkedIn individual profile', recommended_action: 'skip' };
+    if (path.startsWith('/in/')) return { category: 'social_profile', confidence: 'high', reasoning: 'LinkedIn individual profile', recommended_action: 'crawl' };
     if (path.startsWith('/jobs/')) return { category: 'job_board', confidence: 'high', reasoning: 'LinkedIn job board', recommended_action: 'crawl' };
     if (path.startsWith('/company/')) return { category: 'company', confidence: 'high', reasoning: 'LinkedIn company page', recommended_action: 'crawl' };
   }
   const socialDomains = ['twitter.com', 'x.com', 'facebook.com', 'instagram.com', 'tiktok.com', 'www.twitter.com', 'www.x.com', 'www.facebook.com', 'www.instagram.com', 'www.tiktok.com'];
   if (socialDomains.includes(hostname)) {
-    return { category: 'social_profile', confidence: 'high', reasoning: 'Known social media domain', recommended_action: 'skip' };
+    return { category: 'social_profile', confidence: 'high', reasoning: 'Known social media domain', recommended_action: 'crawl' };
   }
   const jobBoards = ['indeed.com', 'glassdoor.com', 'ziprecruiter.com', 'www.indeed.com', 'www.glassdoor.com', 'www.ziprecruiter.com'];
   if (jobBoards.includes(hostname)) {
@@ -38,7 +38,7 @@ export function applyHeuristics(input: ClassificationInput): ClassificationResul
     else if (hostname.includes('bamboo')) platform = 'BambooHR';
     else if (hostname.includes('smartrecruiters')) platform = 'SmartRecruiters';
     else if (hostname.includes('icims')) platform = 'iCIMS';
-    
+
     return { category: 'ats', confidence: 'high', reasoning: 'Known ATS domain', recommended_action: 'crawl', sub_signal: platform };
   }
 
@@ -58,7 +58,7 @@ export function applyHeuristics(input: ClassificationInput): ClassificationResul
     }
   }
   if (['login', 'signin', 'signup'].some(p => path.includes(p))) {
-    return { category: 'ignore', confidence: 'high', reasoning: 'Behind auth wall', recommended_action: 'skip' };
+    return { category: 'ignore', confidence: 'high', reasoning: 'Behind auth wall', recommended_action: 'crawl' };
   }
 
   // 3. Keyword rules

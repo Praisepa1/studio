@@ -4,7 +4,7 @@ export interface SearchQuery {
   term: string;
   category?: URLCategory;
   limit?: number;
-  targetType?: 'company' | 'job' | 'all' | string;
+  targetType?: 'company' | 'job' | 'smb' | 'individual' | 'rfp' | 'all' | string;
 }
 
 export interface SearchResult {

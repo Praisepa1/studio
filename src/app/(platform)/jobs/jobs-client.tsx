@@ -20,17 +20,24 @@ interface JobsClientProps {
 export default function JobsClient({ initialJobs }: JobsClientProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [employmentFilter, setEmploymentFilter] = useState("all");
+  const [locationFilter, setLocationFilter] = useState("all");
+  
+  const uniqueLocations = Array.from(new Set(initialJobs.map(j => j.location || "Remote"))).filter(Boolean).sort();
 
   const filteredJobs = initialJobs.filter((job) => {
     const matchesSearch =
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (job.companyName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (job.description || "").toLowerCase().includes(searchTerm.toLowerCase());
+      (job.description || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (job.location || "Remote").toLowerCase().includes(searchTerm.toLowerCase());
 
     const type = job.employment_type || job.employmentType || "Full-time";
     const matchesType = employmentFilter === "all" || type.toLowerCase() === employmentFilter.toLowerCase();
 
-    return matchesSearch && matchesType;
+    const loc = job.location || "Remote";
+    const matchesLocation = locationFilter === "all" || loc.toLowerCase() === locationFilter.toLowerCase();
+
+    return matchesSearch && matchesType && matchesLocation;
   });
 
   const handleSave = () => {
@@ -65,6 +72,20 @@ export default function JobsClient({ initialJobs }: JobsClientProps) {
               <SelectItem value="part-time">Part-time</SelectItem>
               <SelectItem value="contract">Contract</SelectItem>
               <SelectItem value="remote">Remote</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={locationFilter} onValueChange={setLocationFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
+              {uniqueLocations.map((loc) => (
+                <SelectItem key={loc as string} value={loc as string}>
+                  {loc as string}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

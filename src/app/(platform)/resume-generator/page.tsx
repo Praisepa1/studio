@@ -12,10 +12,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { FileTextIcon, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DEFAULT_AI_PROVIDER } from "@/ai/providers/index";
+import type { AIProvider } from "@/types";
 
 const resumeGeneratorFormSchema = z.object({
   jobDescription: z.string().min(50, "Job description must be at least 50 characters."),
   userDetails: z.string().min(100, "User details must be at least 100 characters (include skills, experience, education)."),
+  provider: z.string(),
 });
 
 type ResumeGeneratorFormValues = z.infer<typeof resumeGeneratorFormSchema>;
@@ -26,12 +30,14 @@ export default function ResumeGeneratorPage() {
   const [generatedResume, setGeneratedResume] = useState<string | null>(null);
   const [editableResume, setEditableResume] = useState<string>("");
   const [isEditing, setIsEditing] = useState(false);
+  const [usedProvider, setUsedProvider] = useState<string | null>(null);
 
   const form = useForm<ResumeGeneratorFormValues>({
     resolver: zodResolver(resumeGeneratorFormSchema),
     defaultValues: {
       jobDescription: "",
       userDetails: "",
+      provider: DEFAULT_AI_PROVIDER,
     },
   });
 
@@ -46,7 +52,8 @@ export default function ResumeGeneratorPage() {
     setGeneratedResume(null);
     setIsEditing(false);
     try {
-      const result: GenerateResumeOutput = await generateResume(data);
+      setUsedProvider(data.provider);
+      const result: GenerateResumeOutput = await generateResume(data, data.provider as AIProvider);
       setGeneratedResume(result.resume);
       toast({
         title: "Resume Generated",
@@ -121,6 +128,31 @@ export default function ResumeGeneratorPage() {
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardContent className="pt-0">
+              <FormField
+                control={form.control}
+                name="provider"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>AI Model Provider</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an AI provider" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="openrouter-free">OpenRouter (Free)</SelectItem>
+                        <SelectItem value="gemini-claude">Gemini → Claude Pipeline</SelectItem>
+                        <SelectItem value="claude">Claude Only</SelectItem>
+                        <SelectItem value="gemini">Gemini Only</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -1,3 +1,4 @@
+export const maxDuration = 300;
 import { NextResponse } from 'next/server';
 import { getAuthSession } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
@@ -18,6 +19,15 @@ function getAtsPlatform(url: string): string | null {
   return null;
 }
 
+/**
+ * POST handler for initiating active employment job discovery flows.
+ * 1. Checks user authorization session.
+ * 2. Compiles search keywords, locations, and industries.
+ * 3. Runs site searches for target career/portal links via searchManager.
+ * 4. Filters candidate links to isolate valid job boards and applicant tracking systems (ATS).
+ * 5. Crawls the target portal links and extracts structured job postings.
+ * 6. Upserts normalized jobs to Supabase jobs table aligned to defined schemas.
+ */
 export async function POST(request: Request) {
   // 1. Auth Guard
   const session = await getAuthSession();
@@ -96,18 +106,13 @@ export async function POST(request: Request) {
           for (const listing of listingsResult.listings) {
             const jobData: any = {
               id: randomUUID(),
-              companyId: '', // Reconcile later or leave blank for now
+              company_id: null,
               title: listing.title,
-              description: `Discovered job posting from careers portal/job board: ${listing.title}. Location: ${listing.location || 'N/A'}. Department: ${listing.department || 'N/A'}. Employment Type: ${listing.employment_type || 'N/A'}.`,
+              description: `Discovered job posting from careers portal: ${listing.title}. Location: ${listing.location || 'N/A'}. Department: ${listing.department || 'N/A'}. Employment Type: ${listing.employment_type || 'N/A'}.`,
               requirements: [],
-              postedAt: listing.posted_date || new Date().toISOString(),
+              posted_at: listing.posted_date || new Date().toISOString(),
               url: listing.listing_url || url,
               source,
-              source_url: url,
-              discovered_at: new Date().toISOString(),
-              location: listing.location || undefined,
-              department: listing.department || undefined,
-              employment_type: listing.employment_type || undefined,
             };
             discoveredJobs.push(jobData);
           }

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAuthSession } from "@/lib/auth";
@@ -87,33 +88,6 @@ export default async function DashboardPage() {
   let proposalsGenerated = 0;
   let recentRuns: any[] = [];
 
-  const fallbackRuns = [
-    {
-      id: "run-1",
-      started_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      query: "hiring engineers US",
-      companies_found: 4,
-      status: "completed",
-      duration_ms: 14500,
-    },
-    {
-      id: "run-2",
-      started_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-      query: "saas remote developers",
-      companies_found: 3,
-      status: "completed",
-      duration_ms: 11200,
-    },
-    {
-      id: "run-3",
-      started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      query: "logistics startups lagos",
-      companies_found: 0,
-      status: "failed",
-      duration_ms: 3200,
-    }
-  ];
-
   try {
     const supabase = await createClient();
 
@@ -151,16 +125,8 @@ export default async function DashboardPage() {
       .limit(5);
     recentRuns = runsData || [];
   } catch (err) {
-    console.warn("Supabase query error, fallback to demo stats:", err);
+    console.warn("Supabase query error:", err);
   }
-
-  // Assign fallback metrics if tables are empty/unmigrated
-  if (totalCompanies === 0) totalCompanies = 15;
-  if (totalLeads === 0) totalLeads = 9;
-  if (highPriorityCompanies === 0) highPriorityCompanies = 5;
-  if (activeHiringCompanies === 0) activeHiringCompanies = 4;
-  if (proposalsGenerated === 0) proposalsGenerated = 3;
-  if (recentRuns.length === 0) recentRuns = fallbackRuns;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

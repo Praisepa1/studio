@@ -54,6 +54,10 @@ export function DiscoveryForm({ onSubmit, isLoading, disabled = false }: Discove
       setError("Keywords must be at least 3 characters.");
       return;
     }
+    if (!targetType) {
+      setError("Please select a target type.");
+      return;
+    }
     setError(null);
 
     onSubmit({

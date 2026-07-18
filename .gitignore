@@ -41,3 +41,9 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+# scratch directory
+/scratch/
+
+# local env files
+.env*
+*.env

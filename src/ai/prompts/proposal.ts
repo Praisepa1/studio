@@ -1,3 +1,5 @@
+import { PROPOSAL_SYSTEM_PROMPT } from './proposal-system-prompt';
+
 export interface ProposalContext {
   jobTitle?: string;
   gigTitle?: string;
@@ -15,7 +17,7 @@ export const proposalPrompts = {
     const title = ctx.jobTitle || ctx.gigTitle || '';
     const desc = ctx.jobDescription || ctx.gigDescription || '';
     return `
-You are a top-rated consultant writing a winning project proposal.
+${PROPOSAL_SYSTEM_PROMPT}
 
 PROJECT: ${title}
 DESCRIPTION: ${desc}
@@ -27,7 +29,6 @@ YOUR SKILLS: ${ctx.userSkills}
 Write a CONCISE project proposal (150–200 words).
 Rules:
 - Open by addressing the prospect's specific problem (not "I am interested")
-- Mention one relevant proof point or result
 - Keep paragraphs short and scannable
 - End with a clear, low-friction CTA
 - No generic openers, no filler
@@ -38,7 +39,7 @@ Rules:
     const title = ctx.jobTitle || ctx.gigTitle || '';
     const desc = ctx.jobDescription || ctx.gigDescription || '';
     return `
-You are a high-value consultant writing a premium project proposal.
+${PROPOSAL_SYSTEM_PROMPT}
 
 PROJECT: ${title}
 DESCRIPTION: ${desc}
@@ -52,7 +53,6 @@ Rules:
 - Open by diagnosing the prospect's specific business problem
 - Position as a strategic partner, not a commodity service provider
 - Show understanding of their industry or goals
-- Include 2–3 specific proof points with measurable results
 - End with a confident, value-focused CTA
 `;
   },
@@ -61,7 +61,7 @@ Rules:
     const title = ctx.jobTitle || ctx.gigTitle || '';
     const desc = ctx.jobDescription || ctx.gigDescription || '';
     return `
-You are a technical expert writing a precise technical project proposal.
+${PROPOSAL_SYSTEM_PROMPT}
 
 PROJECT: ${title}
 DESCRIPTION: ${desc}
@@ -74,7 +74,6 @@ Rules:
 - Open with a concise technical summary of the solution
 - Name specific technologies, frameworks, or methodologies you'd use
 - Address any technical challenges or edge cases you anticipate
-- Include relevant past technical experience
 - End with a concrete next step
 `;
   },
@@ -83,7 +82,7 @@ Rules:
     const title = ctx.jobTitle || ctx.gigTitle || '';
     const desc = ctx.jobDescription || ctx.gigDescription || '';
     return `
-You are a personable, approachable expert writing a project proposal.
+${PROPOSAL_SYSTEM_PROMPT}
 
 PROJECT: ${title}
 DESCRIPTION: ${desc}

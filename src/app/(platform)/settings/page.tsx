@@ -9,9 +9,11 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { LoadingButton } from "@/components/loading-button";
 import { Save } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 const profileFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }).max(50, { message: "Name must not exceed 50 characters." }),
@@ -23,50 +25,81 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-// Mock user data - in a real app, this would come from an auth provider or API
+// Default values before hydration
 const defaultValues: Partial<ProfileFormValues> = {
-  name: "Alex Johnson",
-  email: "alex.johnson@example.com",
-  linkedinProfile: "https://www.linkedin.com/in/alexjohnson",
+  name: "",
+  email: "",
+  linkedinProfile: "",
   portfolioProfile: "",
-  defaultResumeInfo: "Experienced software developer with 5+ years in web technologies including React, Node.js, and Python. Proven ability to deliver high-quality software solutions in agile environments. Strong problem-solving skills and a passion for learning new technologies.",
+  defaultResumeInfo: "",
 };
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true); // Ensures form defaultValues are applied only on client
-  }, []);
+  const supabase = createClient();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues, // Will be correctly initialized after isClient is true
+    defaultValues,
     mode: "onChange",
   });
-  
-  // Re-initialize form when isClient becomes true and defaultValues are available
-  useEffect(() => {
-    if (isClient) {
-        form.reset(defaultValues);
+
+  const loadProfile = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const meta = user.user_metadata || {};
+        form.reset({
+          name: meta.full_name || meta.name || user.email?.split('@')[0] || "",
+          email: user.email || "",
+          linkedinProfile: meta.linkedinProfile || "",
+          portfolioProfile: meta.portfolioProfile || "",
+          defaultResumeInfo: meta.defaultResumeInfo || "",
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsClient(true);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isClient, form.reset]);
+  }, [form, supabase.auth]);
 
-
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+  
   async function onSubmit(data: ProfileFormValues) {
     setIsSaving(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("Saving profile data:", data);
-    toast({
-      title: "Profile Updated",
-      description: "Your settings have been successfully saved.",
-      variant: "default", 
-    });
-    setIsSaving(false);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          full_name: data.name,
+          linkedinProfile: data.linkedinProfile,
+          portfolioProfile: data.portfolioProfile,
+          defaultResumeInfo: data.defaultResumeInfo,
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Profile Updated",
+        description: "Your settings have been successfully saved.",
+        variant: "default", 
+      });
+      router.refresh(); // Refresh to update the layout header
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Failed to update profile.",
+        variant: "destructive", 
+      });
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   if (!isClient) {

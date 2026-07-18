@@ -13,6 +13,9 @@ export interface Company {
   contactEmail?: string;
   contactPhone?: string;
   location?: string;
+  score?: number;
+  tier?: string;
+  enrichment?: any;
 }
 
 export interface CompanyScore {

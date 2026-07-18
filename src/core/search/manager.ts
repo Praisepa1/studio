@@ -11,10 +11,19 @@ export class SearchManager {
   private readonly rateLimitMs = 1000; // 1 second between requests per provider
 
   constructor() {
-    this.providers = [
-      new BraveSearchProvider(),
-      new GoogleSearchProvider()
-    ];
+    this.providers = [];
+    if (process.env.BRAVE_API_KEY) {
+      this.providers.push(new BraveSearchProvider());
+    }
+    if (process.env.GOOGLE_SEARCH_API_KEY && process.env.GOOGLE_SEARCH_CX) {
+      this.providers.push(new GoogleSearchProvider());
+    }
+    
+    // Fallback: if none are configured, include both to raise descriptive configuration errors
+    if (this.providers.length === 0) {
+      this.providers.push(new BraveSearchProvider());
+      this.providers.push(new GoogleSearchProvider());
+    }
   }
 
   private async waitForRateLimit(providerName: string): Promise<void> {

@@ -33,6 +33,7 @@ const navGroups = [
     items: [
       { href: "/discovery", icon: SearchCheck, label: "Search & Discover" },
       { href: "/companies", icon: Briefcase, label: "Companies" },
+      { href: "/smbs", icon: Briefcase, label: "Local SMBs" },
       { href: "/jobs", icon: Briefcase, label: "Jobs" },
     ],
   },
@@ -223,6 +224,7 @@ function pageTitle(pathname: string): string {
     "/dashboard": "Dashboard",
     "/discovery": "Search & Discover",
     "/companies": "Companies",
+    "/smbs": "Local SMBs",
     "/jobs": "Jobs",
     "/leads": "Lead Database",
     "/crm": "CRM",
@@ -245,9 +247,10 @@ interface HeaderProps {
   onToggleCollapse: () => void;
   onMobileOpen: () => void;
   pathname: string;
+  user?: any;
 }
 
-function Header({ collapsed, onToggleCollapse, onMobileOpen, pathname }: HeaderProps) {
+function Header({ collapsed, onToggleCollapse, onMobileOpen, pathname, user }: HeaderProps) {
   const router = useRouter();
   const { toast } = useToast();
 
@@ -256,6 +259,11 @@ function Header({ collapsed, onToggleCollapse, onMobileOpen, pathname }: HeaderP
     toast({ title: "Logged out" });
     router.push("/auth?view=login");
   };
+
+  const meta = user?.user_metadata || {};
+  const name = meta.full_name || meta.name || user?.email || "User";
+  const avatarUrl = meta.avatar_url || "";
+  const initials = name ? name.charAt(0).toUpperCase() : "U";
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6">
@@ -297,13 +305,13 @@ function Header({ collapsed, onToggleCollapse, onMobileOpen, pathname }: HeaderP
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-9 w-9 rounded-full p-0">
               <Avatar className="h-9 w-9">
-                <AvatarImage src="" alt="User" />
-                <AvatarFallback className="bg-primary text-white text-sm font-semibold">J</AvatarFallback>
+                <AvatarImage src={avatarUrl} alt={name} />
+                <AvatarFallback className="bg-primary text-white text-sm font-semibold">{initials}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>{name}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/settings">Settings</Link>
@@ -325,7 +333,7 @@ function Header({ collapsed, onToggleCollapse, onMobileOpen, pathname }: HeaderP
 
 // ─── App Shell ────────────────────────────────────────────────
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children, user }: { children: React.ReactNode; user?: any }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -373,6 +381,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onToggleCollapse={() => setCollapsed((c) => !c)}
           onMobileOpen={() => setMobileOpen(true)}
           pathname={pathname}
+          user={user}
         />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           {children}

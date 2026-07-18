@@ -9,8 +9,8 @@
  * - GenerateResumeOutput - The return type for the generateResume function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { generateWithProvider, DEFAULT_AI_PROVIDER } from '@/ai/providers/index';
+import { z } from 'zod';
 
 const GenerateResumeInputSchema = z.object({
   jobDescription: z
@@ -25,30 +25,15 @@ const GenerateResumeOutputSchema = z.object({
 });
 export type GenerateResumeOutput = z.infer<typeof GenerateResumeOutputSchema>;
 
-export async function generateResume(input: GenerateResumeInput): Promise<GenerateResumeOutput> {
-  return generateResumeFlow(input);
+export async function generateResume(input: GenerateResumeInput, provider = DEFAULT_AI_PROVIDER): Promise<GenerateResumeOutput> {
+  const prompt = `You are an expert resume writer. You will generate a resume for the user based on the following job description and user details.
+
+Job Description: ${input.jobDescription}
+User Details: ${input.userDetails}
+
+Resume:`;
+
+  const result = await generateWithProvider(provider, prompt);
+  return { resume: result.content };
 }
 
-const prompt = ai.definePrompt({
-  name: 'generateResumePrompt',
-  input: {schema: GenerateResumeInputSchema},
-  output: {schema: GenerateResumeOutputSchema},
-  prompt: `You are an expert resume writer. You will generate a resume for the user based on the following job description and user details.
-
-Job Description: {{{jobDescription}}}
-User Details: {{{userDetails}}}
-
-Resume:`,
-});
-
-const generateResumeFlow = ai.defineFlow(
-  {
-    name: 'generateResumeFlow',
-    inputSchema: GenerateResumeInputSchema,
-    outputSchema: GenerateResumeOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);

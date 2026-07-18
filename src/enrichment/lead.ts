@@ -2,6 +2,7 @@
 import { researchPrompts } from '../ai/prompts';
 import { generateWithProvider } from '../ai/providers';
 import type { Lead, AIProvider } from '../types';
+import { cleanAndParseJSON } from '../lib/utils';
 
 export interface EnrichmentOptions {
   provider?: AIProvider;
@@ -35,8 +36,8 @@ export async function enrichLead(
   });
 
   try {
-    const result = await generateWithProvider(provider, prompt, { maxTokens: 1024 });
-    const parsed: LeadEnrichmentResult = JSON.parse(result.content);
+    const result = await generateWithProvider(provider, prompt, { maxTokens: 2048 });
+    const parsed: LeadEnrichmentResult = cleanAndParseJSON(result.content);
 
     return {
       summary: parsed.summary,

@@ -19,10 +19,23 @@ function loadFeedback(): FeedbackEntry[] {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]"); } catch { return []; }
 }
 
+function providerLabel(p: string) {
+  if (p === "gemini") return "Gemini";
+  if (p === "claude") return "Claude";
+  if (p === "gemini-claude") return "Gemini → Claude";
+  if (p === "openrouter-gemini") return "Gemini (OpenRouter)";
+  if (p === "openrouter-claude") return "Claude (OpenRouter)";
+  if (p === "openrouter-pipeline") return "Gemini → Claude (OpenRouter)";
+  return p;
+}
+
 function providerClass(p: string) {
   if (p === "gemini") return "provider-gemini";
   if (p === "claude") return "provider-claude";
   if (p === "gemini-claude") return "provider-pipeline";
+  if (p === "openrouter-gemini") return "provider-gemini bg-indigo-500/10 text-indigo-500 border-indigo-500/20";
+  if (p === "openrouter-claude") return "provider-claude bg-purple-500/10 text-purple-500 border-purple-500/20";
+  if (p === "openrouter-pipeline") return "provider-pipeline";
   return "status-done";
 }
 
@@ -123,7 +136,7 @@ export default function FeedbackPage() {
             <CardContent className="space-y-2">
               {Object.entries(providerCounts).map(([p, count]) => (
                 <div key={p} className="flex items-center justify-between text-sm">
-                  <Badge className={cn("text-[10px] border-0", providerClass(p))}>{p}</Badge>
+                  <Badge className={cn("text-[10px] border-0", providerClass(p))}>{providerLabel(p)}</Badge>
                   <span className="text-muted-foreground">{count} ratings</span>
                 </div>
               ))}
@@ -158,7 +171,7 @@ export default function FeedbackPage() {
               {bestProvider ? (
                 <div className="text-center py-2">
                   <Badge className={cn("text-sm px-3 py-1 border-0", providerClass(bestProvider))}>
-                    {bestProvider}
+                    {providerLabel(bestProvider)}
                   </Badge>
                   <p className="text-xs text-muted-foreground mt-2">
                     {providerPositive[bestProvider]} positive ratings
@@ -204,7 +217,7 @@ export default function FeedbackPage() {
                         <span className="text-sm font-medium">{entry.referenceTitle || entry.referenceId}</span>
                         <Badge variant="outline" className="text-[10px] capitalize">{entry.type.replace("_", " ")}</Badge>
                         <Badge className={cn("text-[10px] border-0", providerClass(entry.provider))}>
-                          {entry.provider}
+                          {providerLabel(entry.provider)}
                         </Badge>
                       </div>
                       {entry.notes && (

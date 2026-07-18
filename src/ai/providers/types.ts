@@ -5,7 +5,7 @@ export interface GenerationOptions {
 }
 
 export interface AIProviderAdapter {
-  name: 'gemini' | 'claude';
+  name: 'gemini' | 'claude' | 'openrouter';
   model: string;
   generate(prompt: string, options?: GenerationOptions): Promise<string>;
 }

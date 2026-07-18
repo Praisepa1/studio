@@ -3,6 +3,16 @@ import { getAuthSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import CompaniesClient from "./companies-client";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+/**
+ * CompaniesPage component - React Server Component that renders the discovered companies view.
+ * - Protects access with an authorization guard.
+ * - Fetches companies from Supabase ordered by company priority score.
+ * - Maps snake_case database fields (e.g. `is_actively_hiring`, `hiring_status`) to camelCase client-side formats.
+
+ */
 export default async function CompaniesPage() {
   // 1. Auth Guard
   const session = await getAuthSession();
@@ -14,66 +24,33 @@ export default async function CompaniesPage() {
   let companies: any[] = [];
   try {
     const supabase = await createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("companies")
       .select("*")
       .order("score", { ascending: false });
 
-    companies = data || [];
+    if (error) throw error;
+
+    companies = (data || []).map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      domain: c.domain,
+      industry: c.industry,
+      location: c.location,
+      size: c.size,
+      score: c.score,
+      tier: c.tier,
+      isActivelyHiring: c.is_actively_hiring,
+      hiringStatus: c.hiring_status,
+      techStack: c.tech_stack || [],
+      contactEmail: c.contact_email,
+      contactPhone: c.contact_phone,
+      enrichment: c.enrichment,
+    }));
   } catch (err) {
     console.error("Failed to fetch companies:", err);
   }
 
-  // Fallback demo companies if Supabase table is unpopulated
-  if (companies.length === 0) {
-    companies = [
-      {
-        id: "comp-1",
-        name: "Acme Corp",
-        domain: "acme.com",
-        industry: "Logistics",
-        location: "Austin, TX",
-        size: "10-50",
-        score: 85,
-        tier: "high_priority",
-        isActivelyHiring: true,
-        techStack: ["React", "TypeScript", "Node.js"],
-        description: "Leading shipping software solutions.",
-        enrichment: {
-          one_liner: "SaaS engine for third-party logistics integrations.",
-          pain_point_hypothesis: "Legacy carrier interfaces require intensive manual developer overhead.",
-          pitch_angle: "Integrate our developer-friendly unified API tool to cut connector dev hours by 80%.",
-        },
-      },
-      {
-        id: "comp-2",
-        name: "FinFlow SaaS",
-        domain: "finflowsaas.io",
-        industry: "Fintech",
-        location: "Lagos, Nigeria",
-        size: "50-200",
-        score: 72,
-        tier: "warm",
-        isActivelyHiring: false,
-        hiringStatus: "passive",
-        techStack: ["Python", "Docker", "Tailwind"],
-        description: "Automated billing infrastructure for African subscription businesses.",
-      },
-      {
-        id: "comp-3",
-        name: "RetailGenie LLC",
-        domain: "retailgenie.com",
-        industry: "E-Commerce",
-        location: "Remote",
-        size: "1-10",
-        score: 38,
-        tier: "low",
-        isActivelyHiring: false,
-        techStack: ["Shopify", "WordPress"],
-        description: "Bespoke storefront templates.",
-      }
-    ];
-  }
 
   return <CompaniesClient initialCompanies={companies} />;
 }

@@ -58,7 +58,7 @@ export async function POST(request: Request) {
         .from('companies')
         .update({
           enrichment: companyAnalysisResult.enrichment,
-          updatedAt: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
         .eq('id', id)
         .select()
@@ -115,7 +115,7 @@ export async function POST(request: Request) {
         .update({
           enrichment: leadAnalysisResult.enrichment,
           persona: leadAnalysisResult.persona,
-          updatedAt: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
         .eq('id', id)
         .select()

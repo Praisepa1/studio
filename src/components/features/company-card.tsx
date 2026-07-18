@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 
 interface CompanyCardProps {
   company: any; // Using any to support enriched / scored fields
+  onClick?: () => void;
   onEnrich?: () => void;
   onExport?: () => void;
 }
@@ -30,7 +31,7 @@ const signalLabels: Record<string, string> = {
   ecommerce: "E-Commerce",
 };
 
-export function CompanyCard({ company, onEnrich, onExport }: CompanyCardProps) {
+export function CompanyCard({ company, onClick, onEnrich, onExport }: CompanyCardProps) {
   const score = company.score ?? 50;
   const isHiring = company.isActivelyHiring === true || company.hiringStatus === "active";
   const hiringStatus = isHiring ? "active" : (company.hiringStatus === "passive" ? "passive" : "unknown");
@@ -51,7 +52,13 @@ export function CompanyCard({ company, onEnrich, onExport }: CompanyCardProps) {
 
   return (
     <TooltipProvider>
-      <Card className="w-full flex flex-col justify-between shadow-sm border border-border hover:shadow-md transition-shadow duration-200 bg-card">
+      <Card 
+        onClick={onClick}
+        className={cn(
+          "w-full flex flex-col justify-between shadow-sm border border-border transition-shadow duration-200 bg-card",
+          onClick ? "cursor-pointer hover:shadow-md hover:border-primary/50" : "hover:shadow-md"
+        )}
+      >
         {/* Header */}
         <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
           <div className="space-y-1 pr-4">

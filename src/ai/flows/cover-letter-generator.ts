@@ -7,8 +7,8 @@
  * - GenerateCoverLetterOutput - The return type for the generateCoverLetter function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { generateWithProvider, DEFAULT_AI_PROVIDER } from '@/ai/providers/index';
+import { z } from 'zod';
 
 const GenerateCoverLetterInputSchema = z.object({
   jobDescription: z.string().describe('The job description for which the cover letter is being written.'),
@@ -23,36 +23,21 @@ const GenerateCoverLetterOutputSchema = z.object({
 });
 export type GenerateCoverLetterOutput = z.infer<typeof GenerateCoverLetterOutputSchema>;
 
-export async function generateCoverLetter(input: GenerateCoverLetterInput): Promise<GenerateCoverLetterOutput> {
-  return generateCoverLetterFlow(input);
-}
+export async function generateCoverLetter(input: GenerateCoverLetterInput, provider = DEFAULT_AI_PROVIDER): Promise<GenerateCoverLetterOutput> {
+  const prompt = `You are an expert at writing cover letters. You will generate a cover letter for the user, based on the job description, user's skills, and user's experience.
 
-const prompt = ai.definePrompt({
-  name: 'generateCoverLetterPrompt',
-  input: {schema: GenerateCoverLetterInputSchema},
-  output: {schema: GenerateCoverLetterOutputSchema},
-  prompt: `You are an expert at writing cover letters. You will generate a cover letter for the user, based on the job description, user's skills, and user's experience.
+Job Description: ${input.jobDescription}
 
-Job Description: {{{jobDescription}}}
+User Name: ${input.userName}
 
-User Name: {{{userName}}}
+User Skills: ${input.userSkills}
 
-User Skills: {{{userSkills}}}
-
-User Experience: {{{userExperience}}}
+User Experience: ${input.userExperience}
 
 Cover Letter:
-`,
-});
+`;
 
-const generateCoverLetterFlow = ai.defineFlow(
-  {
-    name: 'generateCoverLetterFlow',
-    inputSchema: GenerateCoverLetterInputSchema,
-    outputSchema: GenerateCoverLetterOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);
+  const result = await generateWithProvider(provider, prompt);
+  return { coverLetter: result.content };
+}
+

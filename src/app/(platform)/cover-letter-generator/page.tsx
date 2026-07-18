@@ -13,12 +13,16 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { MailIcon, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DEFAULT_AI_PROVIDER } from "@/ai/providers/index";
+import type { AIProvider } from "@/types";
 
 const coverLetterFormSchema = z.object({
   jobDescription: z.string().min(50, "Job description must be at least 50 characters."),
   userName: z.string().min(2, "User name must be at least 2 characters."),
   userSkills: z.string().min(20, "Please list some key skills (at least 20 characters)."),
   userExperience: z.string().min(50, "Briefly describe relevant experience (at least 50 characters)."),
+  provider: z.string(),
 });
 
 type CoverLetterFormValues = z.infer<typeof coverLetterFormSchema>;
@@ -29,6 +33,7 @@ export default function CoverLetterGeneratorPage() {
   const [generatedCoverLetter, setGeneratedCoverLetter] = useState<string | null>(null);
   const [editableCoverLetter, setEditableCoverLetter] = useState<string>("");
   const [isEditing, setIsEditing] = useState(false);
+  const [usedProvider, setUsedProvider] = useState<string | null>(null);
 
 
   const form = useForm<CoverLetterFormValues>({
@@ -38,6 +43,7 @@ export default function CoverLetterGeneratorPage() {
       userName: "",
       userSkills: "",
       userExperience: "",
+      provider: DEFAULT_AI_PROVIDER,
     },
   });
 
@@ -52,7 +58,8 @@ export default function CoverLetterGeneratorPage() {
     setGeneratedCoverLetter(null);
     setIsEditing(false);
     try {
-      const result: GenerateCoverLetterOutput = await generateCoverLetter(data);
+      setUsedProvider(data.provider);
+      const result: GenerateCoverLetterOutput = await generateCoverLetter(data, data.provider as AIProvider);
       setGeneratedCoverLetter(result.coverLetter);
       toast({
         title: "Cover Letter Generated",
@@ -156,6 +163,31 @@ export default function CoverLetterGeneratorPage() {
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardContent className="pt-0">
+              <FormField
+                control={form.control}
+                name="provider"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>AI Model Provider</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an AI provider" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="openrouter-free">OpenRouter (Free)</SelectItem>
+                        <SelectItem value="gemini-claude">Gemini → Claude Pipeline</SelectItem>
+                        <SelectItem value="claude">Claude Only</SelectItem>
+                        <SelectItem value="gemini">Gemini Only</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
